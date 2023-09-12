@@ -46,7 +46,7 @@ async def update_contact_birthday(contact_id: int, body: ContactUpdateBirthday, 
     return contact
 
 
-@router.delete("/{contact_id}", response_model=ContactResponse)
+@router.delete("/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_contact(contact_id: int, db: Session = Depends(get_db)):
     contact = await repository_contacts.remove_contact(contact_id, db)
     if contact is None:
