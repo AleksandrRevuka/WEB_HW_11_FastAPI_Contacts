@@ -11,6 +11,10 @@ python = "^3.11"
 sqlalchemy = "^2.0.19"
 psycopg2-binary = "^2.9.6"
 alembic = "^1.11.2"
+fastapi = "^0.103.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+pydantic = {extras = ["email"], version = "^2.3.0"}
+phonenumbers = "^8.13.20"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.14.0"
@@ -28,11 +32,11 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 exclude = [
-    "/home/alex/python_projects/WEB_HW_11_FastAPI_Contacts/alembic/"
+    "/home/alex/python_projects/WEB_HW_7_students/alembic/"
 ]
 
 [tool.ruff]
 line-length=130
 
 [mypy]
-dmypyExecutable = "/home/alex/python_projects/WEB_HW_11_FastAPI_Contacts/.venv/bin/dmypy"
+dmypyExecutable = "/home/alex/python_projects/WEB_HW_6_SQL/.venv/bin/dmypy"
