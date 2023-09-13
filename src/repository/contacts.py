@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.models import Contact
-from src.schemas import ContactCreate, ContactUpdateName, ContactUpdateBirthday
+from src.schemas import ContactCreate, ContactUpdateBirthday, ContactUpdateName
 
 
 async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:

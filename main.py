@@ -1,10 +1,9 @@
-from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
-from src.routes import contacts, emails, phones, search, birthday
 from src.database.db import get_db
-
+from src.routes import birthday, contacts, emails, phones, search
 
 app = FastAPI()
 

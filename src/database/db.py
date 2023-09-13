@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
 import configparser
 import pathlib
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 file_config = pathlib.Path(__file__).parent.joinpath("config.ini")
 print(file_config)

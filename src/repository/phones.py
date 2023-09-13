@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.database.models import Phone, Contact
+from src.database.models import Contact, Phone
 from src.schemas import PhoneModel
 
 

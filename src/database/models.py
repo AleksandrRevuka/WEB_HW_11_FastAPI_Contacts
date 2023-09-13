@@ -1,9 +1,8 @@
-from .db import Base
-
-from sqlalchemy import Column, Integer, String, func, DateTime, Date
+from sqlalchemy import Column, Date, DateTime, Integer, String, func
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
-from sqlalchemy.orm import relationship
+from .db import Base
 
 
 class Contact(Base):

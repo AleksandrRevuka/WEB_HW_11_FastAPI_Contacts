@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
 from datetime import date, timedelta
+
+from sqlalchemy.orm import Session
 
 from src.database.models import Contact
 

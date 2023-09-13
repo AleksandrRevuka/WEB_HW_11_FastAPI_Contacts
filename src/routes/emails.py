@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import EmailResponse, EmailModel
 from src.repository import emails as repository_emails
+from src.schemas import EmailModel, EmailResponse
 
 router = APIRouter(prefix="/emails", tags=["emails"])
 

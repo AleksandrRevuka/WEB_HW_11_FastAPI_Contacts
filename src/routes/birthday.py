@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import ContactResponse
 from src.repository import birthday as repository_birthday
+from src.schemas import ContactResponse
 
 router = APIRouter(prefix="/birthday", tags=["birthday"])
 

@@ -1,7 +1,7 @@
-import phonenumbers
-
 from typing import List
-from pydantic import BaseModel, Field, EmailStr, field_validator, PastDate
+
+import phonenumbers
+from pydantic import BaseModel, EmailStr, Field, PastDate, field_validator
 
 
 class EmailModel(BaseModel):

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import PhoneResponse, PhoneModel
 from src.repository import phones as repository_phones
+from src.schemas import PhoneModel, PhoneResponse
 
 router = APIRouter(prefix="/phones", tags=["phones"])
 

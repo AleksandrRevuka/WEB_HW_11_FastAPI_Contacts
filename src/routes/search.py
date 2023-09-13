@@ -1,11 +1,11 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import ContactResponse
 from src.repository import search as repository_search
+from src.schemas import ContactResponse
 
 router = APIRouter(prefix="/search", tags=["search_contacts"])
 

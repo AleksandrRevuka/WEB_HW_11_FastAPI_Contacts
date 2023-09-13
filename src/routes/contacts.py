@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import ContactResponse, ContactCreate, ContactUpdateName, ContactUpdateBirthday
 from src.repository import contacts as repository_contacts
+from src.schemas import (ContactCreate, ContactResponse, ContactUpdateBirthday,
+                         ContactUpdateName)
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
