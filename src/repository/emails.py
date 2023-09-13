@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.database.models import Email, Contact
+from src.database.models import Contact, Email
 from src.schemas import EmailModel
 
 
