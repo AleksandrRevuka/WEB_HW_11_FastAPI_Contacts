@@ -11,7 +11,7 @@ async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:
     return db.query(Contact).offset(skip).limit(limit).all()
 
 
-async def get_contact(contact_id: int, db: Session) -> Contact:
+async def get_contact(contact_id: int, db: Session) -> Contact | None:
     return db.query(Contact).filter(Contact.id == contact_id).first()
 
 
@@ -40,7 +40,7 @@ async def create_contact(db: Session, contact_create: ContactCreate) -> Contact:
     return db_contact
 
 
-async def update_contact_name(contact_id: int, body: ContactUpdateName, db: Session):
+async def update_contact_name(contact_id: int, body: ContactUpdateName, db: Session) -> Contact | None:
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if contact:
         existing_contact = (
@@ -65,7 +65,7 @@ async def update_contact_name(contact_id: int, body: ContactUpdateName, db: Sess
     return contact
 
 
-async def update_contact_birthday(contact_id: int, body: ContactUpdateBirthday, db: Session):
+async def update_contact_birthday(contact_id: int, body: ContactUpdateBirthday, db: Session) -> Contact | None:
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if contact:
         contact.birthday = body.birthday
