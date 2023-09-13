@@ -1,8 +1,7 @@
 import phonenumbers
 
-from datetime import date
 from typing import List
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, PastDate
 
 
 class EmailModel(BaseModel):
@@ -51,7 +50,7 @@ class ContactBase(BaseModel):
 
 class ContactResponse(ContactBase):
     id: int
-    birthday: date
+    birthday: PastDate
     emails: List[EmailModel]
     phones: List[PhoneModel]
 
@@ -65,11 +64,11 @@ class ContactUpdateName(ContactBase):
 
 
 class ContactCreate(ContactBase):
-    birthday: date
+    birthday: PastDate
 
 
 class ContactUpdateBirthday(BaseModel):
-    birthday: date
+    birthday: PastDate
 
 
 class DayToBirthday(BaseModel):
