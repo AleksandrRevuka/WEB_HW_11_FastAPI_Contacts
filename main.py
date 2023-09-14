@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException
+import time
+
+from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -13,6 +15,15 @@ app.include_router(search.router, prefix="/api")
 app.include_router(birthday.router, prefix="/api")
 app.include_router(emails.router, prefix="/api")
 app.include_router(phones.router, prefix="/api")
+
+
+@app.middleware("http")
+async def custom_midleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    during = time.time() - start_time
+    response.headers["performance"] = str(during)
+    return response
 
 
 @app.get("/api/healthchecker", tags=["healthchecker"])
