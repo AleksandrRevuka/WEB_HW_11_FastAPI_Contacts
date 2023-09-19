@@ -6,6 +6,11 @@ from src.schemas import PhoneModel
 
 
 async def create_phone(body: PhoneModel, db: Session) -> Phone:
+    contact = db.query(Contact).filter_by(id=body.contact_id).first()
+    phones = [phone for phone in contact.phones]
+    if len(phones) > 3:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone limit exceeded (maximum 3 phones allowed)")
+
     phone = db.query(Phone).filter_by(phone=body.phone).first()
 
     if phone:

@@ -1,24 +1,31 @@
 from typing import List
 
 import phonenumbers
+from fastapi import Form
 from pydantic import BaseModel, EmailStr, Field, PastDate, field_validator
 
+from src.database.models import Role
 
-class EmailModel(BaseModel):
+
+class EmailCreate(BaseModel):
     email: EmailStr
+
+
+class EmailModel(EmailCreate):
     contact_id: int
 
 
-class EmailResponse(EmailModel):
+class EmailResponse(BaseModel):
+    email: EmailStr
+    contact_id: int
     id: int
 
     class Config:
         from_attributes = True
 
 
-class PhoneModel(BaseModel):
+class PhoneCreate(BaseModel):
     phone: str
-    contact_id: int
 
     @classmethod
     def sanitize_phone_number(cls, value):
@@ -36,6 +43,10 @@ class PhoneModel(BaseModel):
             raise ValueError(f"{err}")
 
 
+class PhoneModel(PhoneCreate):
+    contact_id: int
+
+
 class PhoneResponse(PhoneModel):
     id: int
 
@@ -51,8 +62,8 @@ class ContactBase(BaseModel):
 class ContactResponse(ContactBase):
     id: int
     birthday: PastDate
-    emails: List[EmailModel]
-    phones: List[PhoneModel]
+    emails: List[EmailResponse]
+    phones: List[PhoneResponse]
 
     class Config:
         from_attributes = True
@@ -80,3 +91,30 @@ class DayToBirthday(BaseModel):
         if value < 0 or value > 7:
             raise ValueError("day_to_birthday must be between 0 and 7")
         return value
+
+
+class UserModel(BaseModel):
+    username: str
+    email: str
+    password: str
+
+    @classmethod
+    def as_form(cls, username: str = Form(...), email: str = Form(...), password: str = Form(...)) -> "UserModel":
+        return cls(username=username, email=email, password=password)
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    avatar: str
+    roles: Role
+
+    class Config:
+        from_attributes = True
+
+
+class TokenModel(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

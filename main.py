@@ -1,15 +1,18 @@
 import time
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.routes import birthday, contacts, emails, phones, search
+from src.routes import auth, birthday, contacts, emails, phones, search
 
 app = FastAPI()
 
-
+app.include_router(auth.router)
 app.include_router(contacts.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(birthday.router, prefix="/api")
@@ -26,10 +29,18 @@ async def custom_midleware(request: Request, call_next):
     return response
 
 
+app.mount("/src", StaticFiles(directory="src/static"), name="static")
+templates = Jinja2Templates(directory="src/templates")
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "title": "Login"})
+
+
 @app.get("/api/healthchecker", tags=["healthchecker"])
 def healthchecker(db: Session = Depends(get_db)):
     try:
-        # Make request
         result = db.execute(text("SELECT 1")).fetchone()
         if result is None:
             raise HTTPException(status_code=500, detail="Database is not configured correctly")

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+
+
+    <link href="{{ url_for('static', path='/headers.css') }}" rel="stylesheet">
+
+<body>
+
+  <header class="p-3 text-bg-dark">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+          <li><a href="/" class="nav-link px-2 text-secondary">Home</a></li>
+          <li><a href="/docs#" class="nav-link px-2 text-white">Docs</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">Contacts</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">Phones</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">Emails</a></li>
+        </ul>
+
+        <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+          <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..." aria-label="Search">
+        </form>
+
+        <div class="text-end">
+          <a href="/login" type="button" class="btn btn-outline-light me-2">Login</a>
+          <a href="/auth/signup" type="button" class="btn btn-warning">Sign-up</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container themed-container">
+    <h1>Contacts Information</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="themed-grid-col">ID</th>
+          <th class="themed-grid-col">First Name</th>
+          <th class="themed-grid-col">Last Name</th>
+          <th class="themed-grid-col">Birthday</th>
+          <th class="themed-grid-col">Emails</th>
+          <th class="themed-grid-col">Phones</th>
+          <th class="themed-grid-col">Created At</th>
+          <th class="themed-grid-col">Updated At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contact in contacts %}
+          <tr>
+            <td class="themed-grid-col">{{ contact.id }}</td>
+            <td class="themed-grid-col">{{ contact.first_name }}</td>
+            <td class="themed-grid-col">{{ contact.last_name }}</td>
+            <td class="themed-grid-col">{{ contact.birthday }}</td>
+            <td class="themed-grid-col">
+              {% for email_obj in contact.emails %}
+                {{ email_obj.email }}<br>
+              {% endfor %}
+            </td>
+            <td class="themed-grid-col">
+              {% for phone_obj in contact.phones %}
+                {{ phone_obj.phone }}<br>
+              {% endfor %}
+            </td>
+            <td class="themed-grid-col">{{ contact.created_at }}</td>
+            <td class="themed-grid-col">{{ contact.updated_at }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+
+
+
+</body>
+
+</html>

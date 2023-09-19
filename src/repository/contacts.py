@@ -3,8 +3,9 @@ from typing import List
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.database.models import Contact
-from src.schemas import ContactCreate, ContactUpdateBirthday, ContactUpdateName
+from src.database.models import Contact, Email, Phone
+from src.schemas import (ContactCreate, ContactUpdateBirthday,
+                         ContactUpdateName, EmailCreate, PhoneCreate)
 
 
 async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:
@@ -15,7 +16,9 @@ async def get_contact(contact_id: int, db: Session) -> Contact | None:
     return db.query(Contact).filter(Contact.id == contact_id).first()
 
 
-async def create_contact(db: Session, contact_create: ContactCreate) -> Contact:
+async def create_contact(
+    db: Session, contact_create: ContactCreate, email_create: EmailCreate, phone_create: PhoneCreate
+) -> Contact:
     db_contact = Contact(**contact_create.dict())
 
     if db_contact:
@@ -37,6 +40,29 @@ async def create_contact(db: Session, contact_create: ContactCreate) -> Contact:
         db.add(db_contact)
         db.commit()
         db.refresh(db_contact)
+
+    email = db.query(Email).filter(Email.email == email_create.email).first()
+
+    if email:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is exists!")
+
+    email = Email(email=email_create.email, contact_id=db_contact.id)
+
+    db.add(email)
+    db.commit()
+    db.refresh(email)
+
+    phone = db.query(Phone).filter_by(phone=phone_create.phone).first()
+
+    if phone:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Phone is exists!")
+
+    phone = Phone(phone=phone_create.phone, contact_id=db_contact.id)
+
+    db.add(phone)
+    db.commit()
+    db.refresh(phone)
+
     return db_contact
 
 
@@ -75,6 +101,7 @@ async def update_contact_birthday(contact_id: int, body: ContactUpdateBirthday, 
 
 async def remove_contact(contact_id: int, db: Session) -> Contact | None:
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    # TODO: del
     if contact:
         db.delete(contact)
         db.commit()

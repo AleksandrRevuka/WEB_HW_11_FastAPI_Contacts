@@ -6,6 +6,11 @@ from src.schemas import EmailModel
 
 
 async def create_email(body: EmailModel, db: Session) -> Email:
+    contact = db.query(Contact).filter_by(id=body.contact_id).first()
+    emails = len([email.email for email in contact.emails])
+    if emails > 2:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Email limit exceeded (maximum 2 emails allowed)")
+
     email = db.query(Email).filter(Email.email == body.email).first()
 
     if email:
