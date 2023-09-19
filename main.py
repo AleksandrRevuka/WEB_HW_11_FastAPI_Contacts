@@ -1,9 +1,7 @@
 import time
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -30,12 +28,6 @@ async def custom_midleware(request: Request, call_next):
 
 
 app.mount("/src", StaticFiles(directory="src/static"), name="static")
-templates = Jinja2Templates(directory="src/templates")
-
-
-@app.get("/login", response_class=HTMLResponse)
-async def login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "title": "Login"})
 
 
 @app.get("/api/healthchecker", tags=["healthchecker"])

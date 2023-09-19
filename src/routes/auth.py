@@ -11,8 +11,8 @@ from src.repository import users as repository_users
 from src.schemas import TokenModel, UserModel
 from src.services.auth import auth_service
 
-templates = Jinja2Templates(directory="src/templates")
 router = APIRouter(prefix="/auth", tags=["auth"])
+templates = Jinja2Templates(directory="src/templates")
 security = HTTPBearer()
 
 
@@ -32,8 +32,16 @@ async def singup(form_data: UserModel = Depends(UserModel.as_form), db: Session 
     return new_user
 
 
+@router.get("/login", response_class=HTMLResponse)
+async def get_login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "title": "Login"})
+
+
 @router.post("/login", response_model=TokenModel)
-async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    body = form_data.parse()
+    print(body.username)
+    print(body.password)
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
