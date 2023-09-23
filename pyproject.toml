@@ -9,7 +9,6 @@ packages = [{include = "web_hw_11_fastapi_contacts"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 sqlalchemy = "^2.0.19"
-psycopg2-binary = "^2.9.6"
 alembic = "^1.11.2"
 fastapi = "^0.103.1"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
@@ -21,6 +20,8 @@ passlib = "^1.7.4"
 python-jose = "^3.3.0"
 libgravatar = "^1.0.4"
 python-multipart = "^0.0.6"
+logging = "^0.4.9.6"
+psycopg2-binary = "^2.9.7"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.14.0"

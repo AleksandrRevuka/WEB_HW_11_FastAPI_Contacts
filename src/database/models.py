@@ -1,7 +1,6 @@
 import enum
 
-from sqlalchemy import (Column, Date, DateTime, Enum, Integer, String, event,
-                        func)
+from sqlalchemy import Column, Date, DateTime, Enum, Integer, String, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -14,8 +13,13 @@ class Role(enum.Enum):
     user: str = "user"
 
 
-class Contact(Base):
-    __tablename__ = "contacts"
+class ContactType(enum.Enum):
+    email = "email"
+    phone = "phone"
+
+
+class AddressBookContact(Base):
+    __tablename__ = "addressbook"
     id = Column(Integer, primary_key=True)
     first_name = Column(String(55), nullable=False)
     last_name = Column(String(55), nullable=False)
@@ -24,27 +28,16 @@ class Contact(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    emails = relationship("Email", backref="contacts", cascade="all, delete")
-    phones = relationship("Phone", backref="contacts", cascade="all, delete")
+    contacts = relationship("Contact", backref="addressbook", cascade="all, delete")
 
 
-class Email(Base):
-    __tablename__ = "emails"
-
-    id = Column(Integer, primary_key=True)
-    email = Column(String(50), nullable=False, unique=True)
-    contact_id = Column(Integer, ForeignKey(Contact.id, ondelete="CASCADE"), nullable=False)
-
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
-
-class Phone(Base):
-    __tablename__ = "phones"
+class Contact(Base):
+    __tablename__ = "contacts"
 
     id = Column(Integer, primary_key=True)
-    phone = Column(String(20), nullable=True, unique=True)
-    contact_id = Column(Integer, ForeignKey(Contact.id, ondelete="CASCADE"), nullable=False)
+    contact_type = Column("contact_type", Enum(ContactType), nullable=False)
+    contact_value = Column(String(50), nullable=False)
+    contact_id = Column(Integer, ForeignKey(AddressBookContact.id, ondelete="CASCADE"), nullable=False)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -62,7 +55,3 @@ class User(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-
-@event.listens_for(User, "before_insert")
-def before_user_add(mapper, connection, target):
-    target.roles = Role.user
