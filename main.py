@@ -31,10 +31,13 @@ async def custom_midleware(request: Request, call_next):
 
 app.mount("/src", StaticFiles(directory="src/static"), name="static")
 
+
 @app.on_event("startup")
 async def on_startup() -> None:
     message = "Open http://127.0.0.1:8000/docs to start api 🚀 🌘 🪐"
-    color_url = click.style("http://127.0.0.1:8000/docs", bold=True, fg='green', italic=True)
+    color_url = click.style(
+        "http://127.0.0.1:8000/docs", bold=True, fg="green", italic=True
+    )
     color_message = f"Open {color_url} to start api 🚀 🌘 🪐"
     logger.info(message, extra={"color_message": color_message})
 
@@ -44,12 +47,14 @@ def healthchecker(db: Session = Depends(get_db)):
     try:
         result = db.execute(text("SELECT 1")).fetchone()
         if result is None:
-            raise HTTPException(status_code=500, detail="Database is not configured correctly")
+            raise HTTPException(
+                status_code=500, detail="Database is not configured correctly"
+            )
         return {"message": "Welcome to FastAPI!"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
-    
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)

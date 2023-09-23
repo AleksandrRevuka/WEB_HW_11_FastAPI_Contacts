@@ -32,12 +32,12 @@ async def read_contacts(skip: int = 0, limit: int = 10, db: Session = Depends(ge
 
 
 @router.get("/{contact_id}", response_model=AddressbookResponse)
-async def read_contact(
-    contact_id: int, db: Session = Depends(get_db)
-) -> ABC:
+async def read_contact(contact_id: int, db: Session = Depends(get_db)) -> ABC:
     contact = await repository_addressbook.get_contact(contact_id, db)
     if contact is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
+        )
     return contact
 
 
@@ -61,13 +61,11 @@ async def create_contact(
 @router.put(
     "/{contact_id}",
     response_model=AddressbookResponse,
-    
 )
 async def update_contact_name(
     contact_id: int,
     body: AddressbookUpdateName,
     db: Session = Depends(get_db),
-
 ) -> ABC:
     contact = await repository_addressbook.update_contact_name(contact_id, body, db)
     if contact is None:
@@ -93,18 +91,22 @@ async def update_contact_birthday(
     return contact
 
 
-@router.delete("/{contact_id}", 
-               response_model=AddressbookResponse, 
-               dependencies=[Depends(allowed_operation_remove)], 
-               description="Only admin"
+@router.delete(
+    "/{contact_id}",
+    response_model=AddressbookResponse,
+    dependencies=[Depends(allowed_operation_remove)],
+    description="Only admin",
 )
 async def remove_contact(
-    contact_id: int, db: Session = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)
+    contact_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
 ) -> ABC:
     contact = await repository_addressbook.remove_contact(contact_id, db)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
     return contact
+
 
 @router.get("/birthday/{days_to_birthday}", response_model=List[AddressbookResponse])
 async def read_contact_days_to_birthday(days_to_birthday: int = Path(ge=0, le=7), db: Session = Depends(get_db)):

@@ -14,8 +14,8 @@ class ContactResponse(BaseModel):
 
     class Config:
         from_attributes = True
-  
-        
+
+
 class AddressbookBase(BaseModel):
     first_name: str = Field(max_length=55)
     last_name: str = Field(max_length=55)
@@ -38,7 +38,7 @@ class AddressbookUpdateName(AddressbookBase):
 class AddressbookCreate(AddressbookBase):
     birthday: PastDate
 
-        
+
 class DayToBirthday(BaseModel):
     day_to_birthday: int
 
@@ -48,12 +48,12 @@ class DayToBirthday(BaseModel):
         if value < 0 or value > 7:
             raise ValueError("day_to_birthday must be between 0 and 7")
         return value
-    
-    
+
+
 class AddressbookUpdateBirthday(BaseModel):
     birthday: PastDate
-    
-    
+
+
 class PhoneCreate(BaseModel):
     phone: str
 
@@ -71,6 +71,7 @@ class PhoneCreate(BaseModel):
             return phone_number
         except phonenumbers.phonenumberutil.NumberParseException as err:
             raise ValueError(f"{err}")
-        
+
+
 class EmailCreate(BaseModel):
     email: EmailStr

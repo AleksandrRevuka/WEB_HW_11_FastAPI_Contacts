@@ -18,7 +18,9 @@ domain = config.get("DB", "domain")
 port = config.get("DB", "port")
 db_name = config.get("DB", "db_name")
 
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{username}:{password}@{domain}:{port}/{db_name}"
+SQLALCHEMY_DATABASE_URL = (
+    f"postgresql+psycopg2://{username}:{password}@{domain}:{port}/{db_name}"
+)
 Base = declarative_base()
 engin = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 DBSession = sessionmaker(autocommit=False, autoflush=False, bind=engin)

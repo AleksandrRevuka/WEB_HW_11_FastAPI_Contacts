@@ -37,7 +37,9 @@ class Contact(Base):
     id = Column(Integer, primary_key=True)
     contact_type = Column("contact_type", Enum(ContactType), nullable=False)
     contact_value = Column(String(50), nullable=False)
-    contact_id = Column(Integer, ForeignKey(AddressBookContact.id, ondelete="CASCADE"), nullable=False)
+    contact_id = Column(
+        Integer, ForeignKey(AddressBookContact.id, ondelete="CASCADE"), nullable=False
+    )
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -54,4 +56,3 @@ class User(Base):
     roles = Column("roles", Enum(Role), default=Role.user)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-

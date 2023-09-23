@@ -16,7 +16,13 @@ async def search_contact_lastname(contact_lastname: str, db: Session) -> List[AB
 
 async def search_contact_email(contact_email: str, db: Session) -> List[ABC]:
     # return db.query(ABC).join(ABC.contacts).filter(ABC.contacts.any(Contact_.email.ilike(f"{contact_email}%"))).all()
-    return db.query(ABC).join(ABC.contacts).options(joinedload(ABC.contacts)).filter(
-        Contact.contact_type == ContactType.email,
-        Contact.contact_value.ilike(f"{contact_email}%")
-    ).all()
+    return (
+        db.query(ABC)
+        .join(ABC.contacts)
+        .options(joinedload(ABC.contacts))
+        .filter(
+            Contact.contact_type == ContactType.email,
+            Contact.contact_value.ilike(f"{contact_email}%"),
+        )
+        .all()
+    )
