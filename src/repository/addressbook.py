@@ -2,22 +2,30 @@ from datetime import date, timedelta
 from typing import List
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from src.database.models import AddressBookContact as ABC
-from src.database.models import Contact, ContactType
+from src.database.models import Contact, ContactType, User
 from src.schemas.addressbook import (AddressbookCreate,
                                      AddressbookUpdateBirthday,
                                      AddressbookUpdateName, EmailCreate,
                                      PhoneCreate)
+from src.schemas.search import AddressbookFilter
 
 
-async def get_contacts(skip: int, limit: int, db: Session) -> List[ABC]:
-    return db.query(ABC).offset(skip).limit(limit).all()
+async def get_contacts_filter(contacts_filter: AddressbookFilter , db: Session, user_addresbook: Query) -> List[ABC]:
+   
+    query = contacts_filter.filter(user_addresbook).distinct()
+    contacts = db.execute(query)
+    return contacts.scalars().all()
 
 
-async def get_contact(contact_id: int, db: Session) -> ABC | None:
-    return db.query(ABC).filter(ABC.id == contact_id).first()
+async def get_contacts(skip: int, limit: int, addressbook: Query) -> List[ABC]:
+    return addressbook.offset(skip).limit(limit).all()
+
+
+async def get_contact(contact_id: int, db: Session, user_addresbook: Query) -> ABC | None:
+    return user_addresbook.filter(ABC.id == contact_id).first()
 
 
 async def create_contact(
@@ -25,8 +33,11 @@ async def create_contact(
     contact_create: AddressbookCreate,
     email_create: EmailCreate,
     phone_create: PhoneCreate,
+    current_user: User
 ) -> ABC:
-    db_contact = ABC(**contact_create.model_dump())
+    db_contact = ABC(**contact_create.dict())
+    
+    db_contact.user_id = current_user.id
 
     if db_contact:
         existing_contact = (
@@ -100,9 +111,9 @@ async def create_contact(
 
 
 async def update_contact_name(
-    contact_id: int, body: AddressbookUpdateName, db: Session
+    contact_id: int, body: AddressbookUpdateName, db: Session, user_addresbook: Query
 ) -> ABC | None:
-    contact = db.query(ABC).filter(ABC.id == contact_id).first()
+    contact = user_addresbook.filter(ABC.id == contact_id).first()
     if contact:
         existing_contact = (
             db.query(ABC)
@@ -127,17 +138,17 @@ async def update_contact_name(
 
 
 async def update_contact_birthday(
-    contact_id: int, body: AddressbookUpdateBirthday, db: Session
+    contact_id: int, body: AddressbookUpdateBirthday, db: Session, user_addresbook: Query
 ) -> ABC | None:
-    contact = db.query(ABC).filter(ABC.id == contact_id).first()
+    contact = user_addresbook.filter(ABC.id == contact_id).first()
     if contact:
         contact.birthday = body.birthday
         db.commit()
     return contact
 
 
-async def remove_contact(contact_id: int, db: Session) -> ABC | None:
-    contact = db.query(ABC).filter(ABC.id == contact_id).first()
+async def remove_contact(contact_id: int, db: Session, user_addresbook: Query) -> ABC | None:
+    contact = user_addresbook.filter(ABC.id == contact_id).first()
     # TODO: del
     if contact:
         db.delete(contact)
@@ -146,12 +157,12 @@ async def remove_contact(contact_id: int, db: Session) -> ABC | None:
 
 
 async def read_contact_days_to_birthday(
-    days_to_birthday: int, db: Session
+    days_to_birthday: int, db: Session, user_addresbook: Query
 ) -> list[ABC]:
     today = date.today()
     end_date = today + timedelta(days=days_to_birthday)
 
-    contacts_with_upcoming_birthday = db.query(ABC).all()
+    contacts_with_upcoming_birthday = user_addresbook.all()
 
     upcoming_birthday_contacts = []
     for contact in contacts_with_upcoming_birthday:

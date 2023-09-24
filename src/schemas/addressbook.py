@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import date
 from typing import List
 
 import phonenumbers
-from pydantic import BaseModel, EmailStr, Field, PastDate, field_validator
+from pydantic import BaseModel, Field, PastDate, validator
 
 from src.database.models import ContactType
 
@@ -13,7 +13,7 @@ class ContactResponse(BaseModel):
     contact_value: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class AddressbookBase(BaseModel):
@@ -23,16 +23,16 @@ class AddressbookBase(BaseModel):
 
 class AddressbookResponse(AddressbookBase):
     id: int
-    birthday: datetime
+    birthday: date
     contacts: List[ContactResponse]
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class AddressbookUpdateName(AddressbookBase):
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class AddressbookCreate(AddressbookBase):
@@ -42,8 +42,7 @@ class AddressbookCreate(AddressbookBase):
 class DayToBirthday(BaseModel):
     day_to_birthday: int
 
-    @field_validator("day_to_birthday")
-    @classmethod
+    @validator('day_to_birthday', pre=True, always=True)
     def validate_day_to_birthday(cls, value):
         if value < 0 or value > 7:
             raise ValueError("day_to_birthday must be between 0 and 7")
@@ -62,8 +61,8 @@ class PhoneCreate(BaseModel):
         value = "".join(filter(str.isdigit, value))
         return "+" + value
 
-    @field_validator("phone")
-    @classmethod
+    
+    @validator("phone", pre=True, always=True)
     def validate_phone_number(cls, value):
         phone_number = cls.sanitize_phone_number(value)
         try:
@@ -74,4 +73,4 @@ class PhoneCreate(BaseModel):
 
 
 class EmailCreate(BaseModel):
-    email: EmailStr
+    email: str

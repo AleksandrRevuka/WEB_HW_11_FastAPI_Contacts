@@ -9,15 +9,14 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.routes import addressbook, auth, search
+from src.routes import addressbook, auth
 
 logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
 
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api")
 app.include_router(addressbook.router, prefix="/api")
-app.include_router(search.router, prefix="/api")
 
 
 @app.middleware("http")

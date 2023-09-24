@@ -17,7 +17,7 @@ class UserResponse(BaseModel):
     roles: Role
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class TokenModel(BaseModel):
