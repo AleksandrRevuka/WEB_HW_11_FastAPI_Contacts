@@ -33,7 +33,8 @@ async def create_contact(
     contact_create: AddressbookCreate,
     email_create: EmailCreate,
     phone_create: PhoneCreate,
-    current_user: User
+    current_user: User,
+    user_addresbook: Query
 ) -> ABC:
     db_contact = ABC(**contact_create.dict())
     
@@ -41,7 +42,7 @@ async def create_contact(
 
     if db_contact:
         existing_contact = (
-            db.query(ABC)
+            user_addresbook
             .filter(
                 ABC.first_name == db_contact.first_name,
                 ABC.last_name == db_contact.last_name,
@@ -60,7 +61,7 @@ async def create_contact(
         db.refresh(db_contact)
 
     email = (
-        db.query(Contact)
+        user_addresbook
         .filter(
             Contact.contact_type == ContactType.email,
             Contact.contact_value == email_create.email,
@@ -84,7 +85,7 @@ async def create_contact(
     db.refresh(email)
 
     phone = (
-        db.query(Contact)
+        user_addresbook
         .filter(
             Contact.contact_type == ContactType.phone,
             Contact.contact_value == phone_create.phone,
@@ -110,13 +111,77 @@ async def create_contact(
     return db_contact
 
 
+async def add_phone_to_contact(db: Session, 
+                               phone_create: PhoneCreate, 
+                               user_addresbook: Query,
+                               contact_id: int) -> ABC:
+    contact: ABC = user_addresbook.filter(ABC.id == contact_id).first()
+    if contact:
+        phone = (
+        user_addresbook
+        .filter(
+            Contact.contact_type == ContactType.phone,
+            Contact.contact_value == phone_create.phone,
+        )
+        .first()
+        )
+
+        if phone:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Phone is exists!"
+            )
+
+        phone = Contact(
+            contact_type=ContactType.phone,
+            contact_value=phone_create.phone,
+            contact_id=contact.id
+        )
+
+        db.add(phone)
+        db.commit()
+        db.refresh(phone)
+    return contact
+
+
+async def add_email_to_contact(db: Session, 
+                               email_create: EmailCreate, 
+                               user_addresbook: Query,
+                               contact_id: int) -> ABC:
+    contact: ABC = user_addresbook.filter(ABC.id == contact_id).first()
+    if contact:
+        email = (
+        user_addresbook
+        .filter(
+            Contact.contact_type == ContactType.email,
+            Contact.contact_value == email_create.email,
+        )
+        .first()
+        )
+
+        if email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Email is exists!"
+            )
+
+        email = Contact(
+            contact_type=ContactType.email,
+            contact_value=email_create.email,
+            contact_id=contact.id
+        )
+
+        db.add(email)
+        db.commit()
+        db.refresh(email)
+    return contact
+        
+
 async def update_contact_name(
     contact_id: int, body: AddressbookUpdateName, db: Session, user_addresbook: Query
 ) -> ABC | None:
     contact = user_addresbook.filter(ABC.id == contact_id).first()
     if contact:
         existing_contact = (
-            db.query(ABC)
+            user_addresbook
             .filter(
                 ABC.first_name == body.first_name,
                 ABC.last_name == body.last_name,

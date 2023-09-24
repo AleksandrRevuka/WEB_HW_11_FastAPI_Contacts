@@ -81,7 +81,52 @@ async def create_contact(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user)
 ) -> ABC:
-    contact = await repository_addressbook.create_contact(db, contact_create, email_create, phone_create, current_user)
+    user_addresbook = await repository_users.get_contacts_query(current_user.id , db)
+    contact = await repository_addressbook.create_contact(db, 
+                                                          contact_create, 
+                                                          email_create, 
+                                                          phone_create, 
+                                                          current_user, 
+                                                          user_addresbook)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+    return contact
+
+@router.post(
+    "/add_phone/{contact_id}",
+    response_model=AddressbookResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(allowed_operation_get)],
+    description="User, moderators and admin"
+)
+async def add_phone_to_contact(contact_id: int, phone_create: PhoneCreate, 
+                               db: Session = Depends(get_db),
+                               current_user: User = Depends(auth_service.get_current_user)) -> ABC:
+    user_addresbook = await repository_users.get_contacts_query(current_user.id , db)
+    contact = await repository_addressbook.add_phone_to_contact(db,                                                       
+                                                                phone_create, 
+                                                                user_addresbook,
+                                                                contact_id)
+    if contact is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+    return contact
+
+
+@router.post(
+    "/add_email/{contact_id}",
+    response_model=AddressbookResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(allowed_operation_get)],
+    description="User, moderators and admin"
+)
+async def add_email_to_contact(contact_id: int, email_create: EmailCreate, 
+                               db: Session = Depends(get_db),
+                               current_user: User = Depends(auth_service.get_current_user)) -> ABC:
+    user_addresbook = await repository_users.get_contacts_query(current_user.id , db)
+    contact = await repository_addressbook.add_email_to_contact(db,                                                       
+                                                                email_create, 
+                                                                user_addresbook,
+                                                                contact_id)
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
     return contact
