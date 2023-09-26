@@ -2,7 +2,7 @@ from datetime import date
 from typing import List
 
 import phonenumbers
-from pydantic import BaseModel, Field, PastDate, validator
+from pydantic import BaseModel, EmailStr, Field, PastDate, validator
 
 from src.database.models import ContactType
 
@@ -13,7 +13,7 @@ class ContactResponse(BaseModel):
     contact_value: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AddressbookBase(BaseModel):
@@ -27,12 +27,12 @@ class AddressbookResponse(AddressbookBase):
     contacts: List[ContactResponse]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AddressbookUpdateName(AddressbookBase):
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AddressbookCreate(AddressbookBase):
@@ -73,4 +73,4 @@ class PhoneCreate(BaseModel):
 
 
 class EmailCreate(BaseModel):
-    email: str
+    email: EmailStr

@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from fastapi.templating import Jinja2Templates
-from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
@@ -14,7 +13,6 @@ from src.schemas.addressbook import (AddressbookCreate, AddressbookResponse,
                                      AddressbookUpdateBirthday,
                                      AddressbookUpdateName, EmailCreate,
                                      PhoneCreate)
-from src.schemas.search import AddressbookFilter
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 
@@ -40,15 +38,15 @@ async def read_contacts(skip: int = 0, limit: int = 10, db: Session = Depends(ge
     return addressbook
 
 
-@router.get("/search", 
+@router.get("/search/{search}", 
             response_model=List[AddressbookResponse],
             dependencies=[Depends(allowed_operation_get)],
             description="User, moderators and admin")
-async def search_by_criteria(contacts_filter: AddressbookFilter = FilterDepends(AddressbookFilter), 
+async def search_by_criteria(criteria: str, 
                              db: Session = Depends(get_db), 
                              current_user: User = Depends(auth_service.get_current_user)) -> List[ABC]:
     user_addresbook = await repository_users.get_contacts_query(current_user.id , db)
-    addressbook = await repository_addressbook.get_contacts_filter(contacts_filter, db, user_addresbook)
+    addressbook = await repository_addressbook.search_contacts(criteria, user_addresbook)
     return addressbook
 
 

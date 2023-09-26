@@ -21,7 +21,8 @@ libgravatar = "^1.0.4"
 python-multipart = "^0.0.6"
 logging = "^0.4.9.6"
 psycopg2-binary = "^2.9.7"
-fastapi-filter = "^0.6.2"
+pydantic = {extras = ["email"], version = "^2.4.0"}
+fastapi-mail = "^1.4.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.14.0"
@@ -32,7 +33,6 @@ pre-commit = "^3.3.3"
 pyupgrade = "^3.7.0"
 ruff = "^0.0.275"
 rich = "^13.4.2"
-pydantic = "^1.10.12"
 faker = "^19.6.2"
 aiosqlite = "^0.19.0"
 

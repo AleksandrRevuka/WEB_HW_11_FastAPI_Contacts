@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from typing import List
 
 from fastapi import HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Query, Session
 
 from src.database.models import AddressBookContact as ABC
@@ -10,14 +11,17 @@ from src.schemas.addressbook import (AddressbookCreate,
                                      AddressbookUpdateBirthday,
                                      AddressbookUpdateName, EmailCreate,
                                      PhoneCreate)
-from src.schemas.search import AddressbookFilter
 
 
-async def get_contacts_filter(contacts_filter: AddressbookFilter , db: Session, user_addresbook: Query) -> List[ABC]:
-   
-    query = contacts_filter.filter(user_addresbook).distinct()
-    contacts = db.execute(query)
-    return contacts.scalars().all()
+async def search_contacts(criteria: str, user_addresbook: Query) -> List[ABC]:
+
+    return user_addresbook.filter(
+        or_(
+            ABC.first_name.ilike(f"%{criteria}%"),
+            ABC.last_name.ilike(f"%{criteria}%"),
+            Contact.contact_value.ilike(f"%{criteria}%")
+        )
+    ).all()
 
 
 async def get_contacts(skip: int, limit: int, addressbook: Query) -> List[ABC]:
@@ -36,7 +40,7 @@ async def create_contact(
     current_user: User,
     user_addresbook: Query
 ) -> ABC:
-    db_contact = ABC(**contact_create.dict())
+    db_contact = ABC(**contact_create.model_dump())
     
     db_contact.user_id = current_user.id
 
@@ -178,9 +182,9 @@ async def add_email_to_contact(db: Session,
 async def update_contact_name(
     contact_id: int, body: AddressbookUpdateName, db: Session, user_addresbook: Query
 ) -> ABC | None:
-    contact = user_addresbook.filter(ABC.id == contact_id).first()
+    contact: ABC = user_addresbook.filter(ABC.id == contact_id).first()
     if contact:
-        existing_contact = (
+        existing_contact: ABC = (
             user_addresbook
             .filter(
                 ABC.first_name == body.first_name,

@@ -1,6 +1,7 @@
 import enum
 
-from sqlalchemy import Column, Date, DateTime, Enum, Integer, String, func
+from sqlalchemy import (Boolean, Column, Date, DateTime, Enum, Integer, String,
+                        func)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -51,6 +52,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50))
     email = Column(String(150), nullable=False, unique=True)
+    confirmed = Column(Boolean, default=False)
     
     password = Column(String(255), nullable=False)
     refresh_token = Column(String(255), nullable=True)

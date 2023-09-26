@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from src.database.models import Role
 
@@ -9,7 +9,7 @@ class UserModel(BaseModel):
     password: str
 
 
-class UserResponse(BaseModel):
+class UserDb(BaseModel):
     id: int
     username: str
     email: str
@@ -17,10 +17,18 @@ class UserResponse(BaseModel):
     roles: Role
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        
+        
+class UserResponse(BaseModel):
+    user: UserDb
+    detail: str = "User successfully created"
 
 
 class TokenModel(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+class RequestEmail(BaseModel):
+    email: EmailStr
