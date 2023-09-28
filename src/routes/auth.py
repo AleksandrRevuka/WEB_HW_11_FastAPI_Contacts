@@ -153,12 +153,12 @@ async def request_email(
         return {"message": "Your email is already confirmed."}
 
 
-@router.post("/request_password")
-async def request_password(
+@router.post("/reset_password")
+async def reset_password(
     body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)
 ) -> dict:
     """
-    The request_password function is used to request a password reset.
+    The reset_password function is used to request a password reset.
 
     :param body: RequestEmail: Get the email from the request body
     :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
