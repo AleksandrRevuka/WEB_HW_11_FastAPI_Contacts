@@ -18,8 +18,8 @@ class UserDb(BaseModel):
 
     class Config:
         from_attributes = True
-        
-        
+
+
 class UserResponse(BaseModel):
     user: UserDb
     detail: str = "User successfully created"
@@ -30,5 +30,11 @@ class TokenModel(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
 
+
 class RequestEmail(BaseModel):
     email: EmailStr
+
+
+class ResetPassword(BaseModel):
+    new_password: str
+    confirm_password: str

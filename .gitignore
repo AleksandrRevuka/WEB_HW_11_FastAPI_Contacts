@@ -3,3 +3,7 @@
 /poetry.lock
 __pycache__/
 migrations/
+.env
+postgres-data/
+.ruff_cache
+.mypy_cache
