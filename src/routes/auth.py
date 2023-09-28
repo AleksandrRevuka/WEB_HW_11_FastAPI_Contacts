@@ -36,7 +36,9 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
     body.password = auth_service.get_password_hash(body.password)
     new_user = await repository_users.create_user(body, db)
-    background_tasks.add_task(send_email, new_user.email, new_user.username, request.base_url)
+    subject = "Confirm your email! "
+    template = "email_template.html"
+    background_tasks.add_task(send_email, new_user.email, new_user.username, request.base_url, subject, template)
     return {"user": new_user, "detail": "User successfully created. Check your email for confirmation."}
 
 
@@ -141,17 +143,14 @@ async def request_email(
     :return: A message that is displayed to the user
     """
     user = await repository_users.get_user_by_email(body.email, db)
-    if user:
+        
+    if user and not user.confirmed:
         subject = "Confirm your email! "
         template = "email_template.html"
-
-        if not user.confirmed:
-            background_tasks.add_task(send_email, user.email, user.username, request.base_url, subject, template)
-            return {"message": "Check your email for confirmation."}
-        else:
-            return {"message": "Your email is already confirmed."}
-
-    return {"message": "No user found with the provided email."}
+        background_tasks.add_task(send_email, user.email, user.username, request.base_url, subject, template)
+        return {"message": "Check your email for confirmation."}
+    else:
+        return {"message": "Your email is already confirmed."}
 
 
 @router.post("/request_password")
