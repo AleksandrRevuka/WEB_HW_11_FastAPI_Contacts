@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf.config import settings
 from src.database.db import get_db
@@ -106,7 +106,9 @@ class Auth:
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Union[User, None]:
+    async def get_current_user(
+        self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    ) -> Union[User, None]:
         """
         The get_current_user function is a dependency that will be used in the
             protected routes. It uses the OAuth2PasswordBearer scheme to get and validate

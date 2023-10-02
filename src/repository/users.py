@@ -1,11 +1,8 @@
-from typing import List, Tuple
-
 from libgravatar import Gravatar
-from sqlalchemy import Result, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import AddressBookContact as ABC
-from src.database.models import Contact, User
+from src.database.models import User
 from src.schemas.user import ResetPassword, UserModel
 
 
@@ -58,21 +55,6 @@ async def update_token(user: User, refresh_token: str | None, db: AsyncSession) 
     if refresh_token:
         user.refresh_token = refresh_token
         await db.commit()
-
-
-# async def get_contacts_query(user_id: int, db: AsyncSession) -> Result[Tuple[ABC]]:
-#     """
-#     The get_contacts_query function is used to get all the contacts for a user.
-#     It takes in a user_id and db session as parameters, and returns a query object.
-#     The query object contains all the contacts for that particular user.
-
-#     :param user_id: int: Filter the contacts by user_id
-#     :param db: AsyncSession: Pass the database session to the function
-#     :return: A query object
-#     """
-#     query = select(ABC).filter(ABC.user_id == user_id).join(Contact)
-#     address_book = await db.execute(query)
-#     return address_book
 
 
 async def confirmed_email(email: str, db: AsyncSession) -> None:
