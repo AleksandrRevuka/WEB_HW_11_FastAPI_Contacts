@@ -159,11 +159,11 @@ class Auth:
         """
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            email = payload["sub"]
-            return email
         except JWTError as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid token for email verification")
+        email = payload["sub"]
+        return email
 
     def create_email_token(self, data: dict) -> str:
         to_encode = data.copy()
