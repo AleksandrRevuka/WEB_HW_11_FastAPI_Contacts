@@ -2,7 +2,7 @@ from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException,
                      Request, Security, status)
 from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
                               OAuth2PasswordRequestForm)
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.database.models import User
@@ -17,7 +17,7 @@ security = HTTPBearer()
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)) -> dict:
+async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The signup function creates a new user in the database.
     It takes a UserModel object as input, which contains the username and email of the new user.
@@ -28,7 +28,7 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
     :param body: UserModel: Get the data from the request body
     :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
     :param request: Request: Get the base url of the server
-    :param db: Session: Get the database session
+    :param db: AsyncSession: Get the database session
     :return: A dict with the user and a message
     """
     exist_user = await repository_users.get_user_by_email(body.email, db)
@@ -38,19 +38,19 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
     new_user = await repository_users.create_user(body, db)
     subject = "Confirm your email! "
     template = "email_template.html"
-    background_tasks.add_task(send_email, new_user.email, new_user.username, request.base_url, subject, template)
+    background_tasks.add_task(send_email, new_user.email, new_user.username, str(request.base_url), subject, template)
     return {"user": new_user, "detail": "User successfully created. Check your email for confirmation."}
 
 
 @router.post("/login", response_model=TokenModel)
-async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> dict:
+async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)) -> dict:
     """
     The login function is used to authenticate a user.
     It takes in the username and password of the user, and returns an access token if successful.
 
 
     :param body: OAuth2PasswordRequestForm: Get the username and password from the request body
-    :param db: Session: Pass the database session to the function
+    :param db: AsyncSession: Pass the database session to the function
     :return: A dict with the access token, refresh token and a bearer type
     """
     user: User | None = await repository_users.get_user_by_email(body.username, db)
@@ -72,7 +72,7 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
 
 
 @router.get("/refresh_token", response_model=TokenModel)
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)) -> dict:
+async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: AsyncSession = Depends(get_db)) -> dict:
     """
     The refresh_token function is used to refresh the access token.
     It takes in a refresh token and returns a new access token.
@@ -81,7 +81,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
     (logging them out) and raise an HTTPException indicating unauthorized access.
 
     :param credentials: HTTPAuthorizationCredentials: Get the token from the header
-    :param db: Session: Pass the database session to the function
+    :param db: AsyncSession: Pass the database session to the function
     :return: A dictionary with the access token, refresh token, and type of bearer
     """
     token = credentials.credentials
@@ -104,7 +104,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
 
 
 @router.patch("/confirmed_email/{token}")
-async def confirmed_email(token: str, db: Session = Depends(get_db)) -> dict:
+async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The confirmed_email function is used to confirm a user's email address.
         It takes the token from the URL and uses it to get the user's email address.
@@ -112,10 +112,10 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)) -> dict:
         If not, then we update their record in our database with a confirmation of their email.
 
     :param token: str: Get the token from the url
-    :param db: Session: Access the database
+    :param db: AsyncSession: Access the database
     :return: A message that the email is already confirmed or a message that the email has been confirmed
     """
-    email = await auth_service.get_email_from_token(token)
+    email = auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
@@ -127,7 +127,7 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)) -> dict:
 
 @router.post("/request_email")
 async def request_email(
-    body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)
+    body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)
 ) -> dict:
     """
     The request_email function is used to send an email to the user with a link
@@ -139,7 +139,7 @@ async def request_email(
     :param body: RequestEmail: Get the email from the request body
     :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
     :param request: Request: Get the base url of the server
-    :param db: Session: Get the database session
+    :param db: AsyncSession: Get the database session
     :return: A message that is displayed to the user
     """
     user = await repository_users.get_user_by_email(body.email, db)
@@ -147,7 +147,7 @@ async def request_email(
     if user and not user.confirmed:
         subject = "Confirm your email! "
         template = "email_template.html"
-        background_tasks.add_task(send_email, user.email, user.username, request.base_url, subject, template)
+        background_tasks.add_task(send_email, user.email, user.username, str(request.base_url), subject, template)
         return {"message": "Check your email for confirmation."}
     else:
         return {"message": "Your email is already confirmed."}
@@ -155,7 +155,7 @@ async def request_email(
 
 @router.post("/reset_password")
 async def reset_password(
-    body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)
+    body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)
 ) -> dict:
     """
     The reset_password function is used to request a password reset.
@@ -163,7 +163,7 @@ async def reset_password(
     :param body: RequestEmail: Get the email from the request body
     :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
     :param request: Request: Get the base url of the application
-    :param db: Session: Get the database session from the dependency injection container
+    :param db: AsyncSession: Get the database session from the dependency injection container
     :return: A message to the user if the email is found in our database
     """
     user = await repository_users.get_user_by_email(body.email, db)
@@ -172,14 +172,14 @@ async def reset_password(
         subject = "Password Reset Request"
         template = "password_template.html"
 
-        background_tasks.add_task(send_email, user.email, user.username, request.base_url, subject, template)
+        background_tasks.add_task(send_email, user.email, user.username, str(request.base_url), subject, template)
         return {"message": "Password reset request sent. We've emailed you with instructions on how to reset your password."}
 
     return {"message": "No user found with the provided email."}
 
 
 @router.patch("/reset_password/{token}", response_model=UserResponse)
-async def confirmed_password(body: ResetPassword, token: str, db: Session = Depends(get_db)) -> dict:
+async def confirmed_password(body: ResetPassword, token: str, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The confirmed_password function is used to reset a user's password.
         It takes in the new_password and confirm_password fields from the ResetPassword model,
@@ -190,7 +190,7 @@ async def confirmed_password(body: ResetPassword, token: str, db: Session = Depe
 
     :param body: ResetPassword: Get the new password and confirm_password from the request body
     :param token: str: Get the email of the user who requested a password reset
-    :param db: Session: Access the database
+    :param db: AsyncSession: Access the database
     :return: A dictionary with the user and a message
     """
     if body.new_password != body.confirm_password:
@@ -199,7 +199,7 @@ async def confirmed_password(body: ResetPassword, token: str, db: Session = Depe
             detail="Password mismatch. Please make sure that the entered passwords are identical.",
         )
 
-    email = await auth_service.get_email_from_token(token)
+    email = auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
 
     if user is None:

@@ -1,6 +1,6 @@
 import pickle
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union
 
 import redis
 from fastapi import Depends, HTTPException, status
@@ -106,7 +106,7 @@ class Auth:
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Union[User, None]:
         """
         The get_current_user function is a dependency that will be used in the
             protected routes. It uses the OAuth2PasswordBearer scheme to get and validate
@@ -136,19 +136,18 @@ class Auth:
         except JWTError:
             raise credentials_exception
 
-        user = self.r.get(f"user:{email}")
-        if user is None:
+        user_r = self.r.get(f"user:{email}")
+        if user_r is None:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
-            self.r.set(f"user:{email}", pickle.dumps(user))
+            user_r = pickle.dumps(user)
+            self.r.set(f"user:{email}", user_r)
             self.r.expire(f"user:{email}", 900)
-        else:
-            user = pickle.loads(user)
 
-        return user
+        return pickle.loads(user_r)
 
-    async def get_email_from_token(self, token: str) -> str:
+    def get_email_from_token(self, token: str) -> str:
         """
         The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
         If the token is invalid, it raises an HTTPException.
@@ -159,11 +158,11 @@ class Auth:
         """
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            email = payload["sub"]
-            return email
         except JWTError as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid token for email verification")
+        email = payload["sub"]
+        return email
 
     def create_email_token(self, data: dict) -> str:
         to_encode = data.copy()

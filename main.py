@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf.config import settings
 from src.database.db import get_db
@@ -69,11 +69,17 @@ async def limit_access_by_ip(request: Request, call_next: Callable) -> JSONRespo
     :param call_next: Callable: Call the next function in the middleware chain
     :return: A jsonresponse object with a 403 status code and an error message
     """
-    ip = ip_address(request.client.host)
-    allowed_ips = list(ip_network(f"{settings.allowed_ips}/24"))
+    # Ensure request.client is not None before accessing host
+    if request.client and request.client.host:
+        host = request.client.host
+        ip = ip_address(host)
+        allowed_ips = list(ip_network(f"{settings.allowed_ips}/24"))
 
-    if ip not in allowed_ips:
-        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Not allowed IP address"})
+        if ip not in allowed_ips:
+            return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Not allowed IP address"})
+    else:
+        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Invalid client"})
+
     response = await call_next(request)
     return response
 
@@ -96,7 +102,7 @@ async def on_startup() -> None:
 
 
 @app.get("/api/healthchecker", tags=["healthchecker"])
-def healthchecker(db: Session = Depends(get_db)) -> dict:
+async def healthchecker(db: AsyncSession = Depends(get_db)) -> dict:
     """
     The healthchecker function is a simple function that checks the database connection.
     It returns a JSON response with the message &quot;Welcome to FastAPI!&quot; if everything is working correctly.
@@ -105,8 +111,9 @@ def healthchecker(db: Session = Depends(get_db)) -> dict:
     :return: A dictionary with a message
     """
     try:
-        result = db.execute(text("SELECT 1")).fetchone()
-        if result is None:
+        result = await db.execute(text("SELECT 1"))
+        fetched_result = result.fetchone()
+        if fetched_result is None:
             raise HTTPException(status_code=500, detail="Database is not configured correctly")
         return {"message": "Welcome to FastAPI!"}
     except Exception as e:
