@@ -11,6 +11,14 @@ from src.schemas.addressbook import AddressbookCreate, AddressbookUpdateBirthday
 
 
 async def search_contacts(criteria: str, current_user: int, db: AsyncSession):
+    """
+    The search_contacts function searches the address book for a user by first name, last name, or contact value.
+
+    :param criteria: str: Filter the results based on a search term
+    :param current_user: int: Ensure that the user is only able to search for contacts in their own address book
+    :param db: AsyncSession: Pass the database connection to the function
+    :return: A list of tuples
+    """
     query = (
         select(ABC)
         .join(Contact)
@@ -33,6 +41,19 @@ async def search_contacts(criteria: str, current_user: int, db: AsyncSession):
 
 
 async def get_contacts(skip: int, limit: int, current_user: int, db: AsyncSession):
+    """
+    The get_contacts function returns a list of contacts from the address book.
+    The function takes in three parameters: skip, limit, and current_user.
+    Skip is an integer that determines how many contacts to skip over before returning results.
+    Limit is an integer that determines how many results to return after skipping over the specified number of contacts.
+    Current_user is an integer representing the user whose address book we are querying.
+
+    :param skip: int: Determine how many records to skip
+    :param limit: int: Limit the number of results returned
+    :param current_user: int: Filter the results by user_id
+    :param db: AsyncSession: Pass the database session to the function
+    :return: A list of tuples
+    """
     abc_alias = aliased(ABC)
     contact_alias = aliased(Contact)
     query = select(abc_alias).join(contact_alias).where(abc_alias.user_id == current_user).offset(skip).limit(limit)
@@ -42,6 +63,18 @@ async def get_contacts(skip: int, limit: int, current_user: int, db: AsyncSessio
 
 
 async def get_contact(db: AsyncSession, contact_id: int, current_user: int) -> ABC | None:
+    """
+    The get_contact function is used to retrieve a single contact from the address book.
+    It takes in two parameters: db and contact_id. The db parameter is an AsyncSession object that represents the database
+    connection, while the contact_id parameter is an integer representing which specific Contact we want to retrieve
+    from our Address Book.
+    The function returns either a single Contact or None if no such Contact exists.
+
+    :param db: AsyncSession: Pass in the database session
+    :param contact_id: int: Specify the contact id of the contact you want to retrieve
+    :param current_user: int: Make sure that the user can only access their own address book
+    :return: A contact from the database
+    """
     abc_alias = aliased(ABC)
     contact_alias = aliased(Contact)
     query = select(abc_alias).join(contact_alias).where(and_(abc_alias.user_id == current_user, abc_alias.id == contact_id))
@@ -59,6 +92,20 @@ async def create_contact(
     phone_create: PhoneCreate,
     current_user: int,
 ) -> ABC:
+    """
+    The create_contact function creates a new contact in the database.
+        Args:
+            db (AsyncSession): The database session to use for this operation.
+            contact_create (AddressbookCreate): A pydantic model containing the data needed to create a new Contact object.
+
+    :param db: AsyncSession: Pass the database session to the function
+    :param contact_create: AddressbookCreate: Create a new contact
+    :param email_create: EmailCreate: Create a new contact
+    :param phone_create: PhoneCreate: Create a new phone object
+    :param current_user: int: Get the current user id
+    :param : Pass the database session to the function
+    :return: The new contact
+    """
     db_contact = ABC(**contact_create.model_dump())
 
     db_contact.user_id = current_user
@@ -149,6 +196,15 @@ async def create_contact(
 
 
 async def add_phone_to_contact(db: AsyncSession, phone_create: PhoneCreate, current_user: int, contact_id: int) -> Contact | None:
+    """
+    The add_phone_to_contact function adds a phone number to an existing contact.
+
+    :param db: AsyncSession: Connect to the database
+    :param phone_create: PhoneCreate: Create a new phone number for the contact
+    :param current_user: int: Get the current user id
+    :param contact_id: int: Identify the contact that we want to add a phone number to
+    :return: A contact object, which is a row in the database
+    """
     contact = await db.execute(select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user))
     existing_contact = contact.fetchone()
 
@@ -177,6 +233,15 @@ async def add_phone_to_contact(db: AsyncSession, phone_create: PhoneCreate, curr
 
 
 async def add_email_to_contact(db: AsyncSession, email_create: EmailCreate, current_user: int, contact_id: int) -> Contact:
+    """
+    The add_email_to_contact function adds an email to a contact.
+
+    :param db: AsyncSession: Connect to the database
+    :param email_create: EmailCreate: Create a new email for the contact
+    :param current_user: int: Ensure that the user is only able to add an email address to a contact
+    :param contact_id: int: Identify the contact to add the email to
+    :return: A contact object
+    """
     contact = await db.execute(select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user))
     existing_contact = contact.fetchone()
 
@@ -205,6 +270,15 @@ async def add_email_to_contact(db: AsyncSession, email_create: EmailCreate, curr
 
 
 async def update_contact_name(db: AsyncSession, body: AddressbookUpdateName, current_user: int, contact_id: int):
+    """
+    The update_contact_name function updates the first and last name of a contact.
+
+    :param db: AsyncSession: Pass in the database session
+    :param body: AddressbookUpdateName: Pass the new first and last name to the function
+    :param current_user: int: Ensure that the user is only able to update their own contacts
+    :param contact_id: int: Specify the id of the contact that will be updated
+    :return: A contact object
+    """
     contact_query = select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user)
     existing_contact = await db.execute(contact_query)
     contact = existing_contact.scalar()
@@ -235,6 +309,15 @@ async def update_contact_name(db: AsyncSession, body: AddressbookUpdateName, cur
 async def update_contact_birthday(
     db: AsyncSession, body: AddressbookUpdateBirthday, current_user: int, contact_id: int
 ) -> ABC | None:
+    """
+    The update_contact_birthday function updates the birthday of a contact.
+
+    :param db: AsyncSession: Create a database connection
+    :param body: AddressbookUpdateBirthday: Pass the data from the request body to the function
+    :param current_user: int: Ensure that the user is only able to update their own contact
+    :param contact_id: int: Identify the contact to be updated
+    :return: The updated contact
+    """
     contact_query = select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user)
     existing_contact = await db.execute(contact_query)
     contact = existing_contact.scalar()
@@ -250,6 +333,14 @@ async def update_contact_birthday(
 
 
 async def remove_contact(db: AsyncSession, current_user: int, contact_id: int) -> ABC | None:
+    """
+    The remove_contact function removes a contact from the database.
+
+    :param db: AsyncSession: Pass the database session into the function
+    :param current_user: int: Identify the user who is making the request
+    :param contact_id: int: Identify the contact to be deleted
+    :return: The contact that was deleted
+    """
     contact_query = select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user)
     existing_contact = await db.execute(contact_query)
     contact = existing_contact.scalar()
@@ -264,6 +355,14 @@ async def remove_contact(db: AsyncSession, current_user: int, contact_id: int) -
 
 
 async def read_contact_days_to_birthday(db: AsyncSession, days_to_birthday: int, current_user: int):
+    """
+    The read_contact_days_to_birthday function returns a list of contacts that have birthdays within the next X days.
+
+    :param db: AsyncSession: Connect to the database
+    :param days_to_birthday: int: Specify the number of days to look ahead for upcoming birthdays
+    :param current_user: int: Filter the results to only show contacts that belong to the current user
+    :return: A list of contacts that have a birthday within the next x days
+    """
     today = date.today()
     end_date = today + timedelta(days=days_to_birthday)
 
