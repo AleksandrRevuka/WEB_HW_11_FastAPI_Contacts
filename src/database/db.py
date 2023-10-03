@@ -1,23 +1,40 @@
-from fastapi import HTTPException, status
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import declarative_base, sessionmaker
+import contextlib
+from typing import AsyncIterator
+
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from src.conf.config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
 
-Base = declarative_base()
-engin = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
-DBSession = sessionmaker(autocommit=False, autoflush=False, bind=engin)
+async_engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=False)
+AsyncDBSession = async_sessionmaker(autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession)
 
 
-def get_db():
-    db = DBSession()
-    try:
-        yield db
-    except SQLAlchemyError as err:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
-    finally:
-        db.close()
+class DatabaseSessionManager:
+    def __init__(self, url: str):
+        self._engine: AsyncEngine | None = create_async_engine(url)
+        self._session_maker: async_sessionmaker | None = async_sessionmaker(
+            autocommit=False, autoflush=False, expire_on_commit=False, bind=self._engine
+        )
+
+    @contextlib.asynccontextmanager
+    async def session(self) -> AsyncIterator[AsyncSession]:
+        if self._session_maker is None:
+            raise Exception("DatabaseSessionManager is not initialized")
+        session = self._session_maker()
+        try:
+            yield session
+        except Exception as err:
+            print(err)
+            await session.rollback()
+        finally:
+            await session.close()
+
+
+sessionmanager = DatabaseSessionManager(settings.sqlalchemy_database_url)
+
+
+async def get_db():
+    async with sessionmanager.session() as session:
+        yield session

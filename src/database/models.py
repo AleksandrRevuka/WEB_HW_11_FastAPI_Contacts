@@ -1,11 +1,14 @@
 import enum
+from datetime import date, datetime
+from typing import List
 
-from sqlalchemy import (Boolean, Column, Date, DateTime, Enum, Integer, String,
-                        func)
-from sqlalchemy.orm import relationship
+from sqlalchemy import Date, DateTime, Enum, String, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import ForeignKey
 
-from .db import Base
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Role(enum.Enum):
@@ -21,44 +24,45 @@ class ContactType(enum.Enum):
 
 class AddressBookContact(Base):
     __tablename__ = "addressbook"
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String(55), nullable=False)
-    last_name = Column(String(55), nullable=False)
-    birthday = Column("birthday", Date)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(55), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(55), nullable=False)
+    birthday: Mapped[date] = mapped_column(Date)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-    contacts = relationship("Contact", backref="addressbook", cascade="all, delete")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+
+    contacts: Mapped[List["Contact"]] = relationship(backref="addressbook", cascade="all, delete")
 
 
 class Contact(Base):
     __tablename__ = "contacts"
 
-    id = Column(Integer, primary_key=True)
-    contact_type = Column("contact_type", Enum(ContactType), nullable=False)
-    contact_value = Column(String(50), nullable=False)
-    contact_id = Column(
-        Integer, ForeignKey(AddressBookContact.id, ondelete="CASCADE"), nullable=False
-    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    contact_type: Mapped[Enum] = mapped_column("contact_type", Enum(ContactType), nullable=False)
+    contact_value: Mapped[str] = mapped_column(String(50), nullable=False)
+    contact_id: Mapped[int] = mapped_column(ForeignKey("addressbook.id", ondelete="CASCADE"), nullable=False)
 
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50))
-    email = Column(String(150), nullable=False, unique=True)
-    confirmed = Column(Boolean, default=False)
-    
-    password = Column(String(255), nullable=False)
-    refresh_token = Column(String(255), nullable=True)
-    avatar = Column(String(255), nullable=True)
-    roles = Column("roles", Enum(Role), default=Role.user)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
-    addressbook = relationship("AddressBookContact", backref="users", cascade="all, delete")
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(50))
+    email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
+    confirmed: Mapped[bool] = mapped_column(default=False)
+
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
+    avatar: Mapped[str] = mapped_column(String(255), nullable=True)
+    roles: Mapped[Enum] = mapped_column("roles", Enum(Role), default=Role.user)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+
+    addressbook: Mapped[List["AddressBookContact"]] = relationship(backref="users", cascade="all, delete")

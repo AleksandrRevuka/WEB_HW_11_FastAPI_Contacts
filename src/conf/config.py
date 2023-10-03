@@ -2,29 +2,29 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    postgres_user: str
-    postgres_password: str
-    postgres_db: str
-    postgres_domain: str
-    postgres_port: int
+    postgres_user: str = "postgres"
+    postgres_password: str = "secretPassword"
+    postgres_db: str = "postgres"
+    postgres_domain: str = "localhost"
+    postgres_port: int = 5432
 
-    secret_key: str
-    algorithm: str
+    secret_key: str = "secret_key"
+    algorithm: str = "HS256"
 
-    mail_username: str
-    mail_password: str
-    mail_from: str
-    mail_port: int
-    mail_server: str
+    mail_username: str = "example@meta.ua"
+    mail_password: str = "secretPassword"
+    mail_from: str = "example@meta.ua"
+    mail_port: int = 465
+    mail_server: str = "smtp.meta.ua"
 
-    redis_host: str
-    redis_port: int
+    redis_host: str = "localhost"
+    redis_port: int = 6379
 
     allowed_ips: str
 
-    cloudinary_name: str
-    cloudinary_api_key: str
-    cloudinary_api_secret: str
+    cloudinary_name: str = "name"
+    cloudinary_api_key: str = "1234567890"
+    cloudinary_api_secret: str = "secret"
 
     class Config:
         env_file = ".env"
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_url(self) -> str:
-        return f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}:{self.postgres_port}/{self.postgres_db}"
+        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}:{self.postgres_port}/{self.postgres_db}"
 
 
-settings = Settings()
+settings = Settings()  # type: ignore
