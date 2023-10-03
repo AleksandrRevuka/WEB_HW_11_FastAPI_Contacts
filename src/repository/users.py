@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import User
-from src.schemas.user import ResetPassword, UserModel
+from src.schemas.user import UserModel
 
 
 async def get_user_by_email(email: str, db: AsyncSession) -> User | None:
@@ -88,11 +88,16 @@ async def update_avatar(email, url: str, db: AsyncSession) -> User | None:
     user = await get_user_by_email(email, db)
     if user:
         user.avatar = url
-        await db.commit()
-    return user
+        try:
+            await db.commit()
+            return user
+        except Exception as e:
+            await db.rollback()
+            raise e
+    return None
 
 
-async def change_password(user: User, body: ResetPassword, db: AsyncSession) -> User:
+async def change_password(user: User, password: str, db: AsyncSession) -> User:
     """
     The change_password function takes in a user, body, and db.
     The function then sets the password of the user to be equal to the confirm_password field of body.
@@ -104,8 +109,10 @@ async def change_password(user: User, body: ResetPassword, db: AsyncSession) -> 
     :param db: AsyncSession: Access the database
     :return: The user object with the new password
     """
-    user.password = body.confirm_password
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
+    user.password = password
+    try:
+        await db.commit()
+        return user
+    except Exception as e:
+        await db.rollback()
+        raise e

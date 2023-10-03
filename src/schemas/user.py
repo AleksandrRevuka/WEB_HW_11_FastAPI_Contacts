@@ -25,6 +25,10 @@ class UserResponse(BaseModel):
     detail: str = "User successfully created"
 
 
+class MessageResponse(BaseModel):
+    message: str = "This is a message"
+
+
 class TokenModel(BaseModel):
     access_token: str
     refresh_token: str

@@ -1,14 +1,11 @@
-from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException,
-                     Request, Security, status)
-from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
-                              OAuth2PasswordRequestForm)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Security, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.database.models import User
 from src.repository import users as repository_users
-from src.schemas.user import (RequestEmail, ResetPassword, TokenModel,
-                              UserModel, UserResponse)
+from src.schemas.user import RequestEmail, TokenModel, UserModel, UserResponse
 from src.services.auth import auth_service
 from src.services.email import send_email
 
@@ -17,7 +14,9 @@ security = HTTPBearer()
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)) -> dict:
+async def signup(
+    body: UserModel, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)
+) -> dict:
     """
     The signup function creates a new user in the database.
     It takes a UserModel object as input, which contains the username and email of the new user.
@@ -72,7 +71,9 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
 
 
 @router.get("/refresh_token", response_model=TokenModel)
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: AsyncSession = Depends(get_db)) -> dict:
+async def refresh_token(
+    credentials: HTTPAuthorizationCredentials = Security(security), db: AsyncSession = Depends(get_db)
+) -> dict:
     """
     The refresh_token function is used to refresh the access token.
     It takes in a refresh token and returns a new access token.
@@ -103,7 +104,7 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
     }
 
 
-@router.patch("/confirmed_email/{token}")
+@router.get("/confirmed_email/{token}")
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The confirmed_email function is used to confirm a user's email address.
@@ -143,7 +144,7 @@ async def request_email(
     :return: A message that is displayed to the user
     """
     user = await repository_users.get_user_by_email(body.email, db)
-        
+
     if user and not user.confirmed:
         subject = "Confirm your email! "
         template = "email_template.html"
@@ -153,12 +154,12 @@ async def request_email(
         return {"message": "Your email is already confirmed."}
 
 
-@router.post("/reset_password")
-async def reset_password(
+@router.post("/forgot_password")
+async def forgot_password(
     body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)
 ) -> dict:
     """
-    The reset_password function is used to request a password reset.
+    The forgot_password function is used to request a password reset.
 
     :param body: RequestEmail: Get the email from the request body
     :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
@@ -178,8 +179,8 @@ async def reset_password(
     return {"message": "No user found with the provided email."}
 
 
-@router.patch("/reset_password/{token}", response_model=UserResponse)
-async def confirmed_password(body: ResetPassword, token: str, db: AsyncSession = Depends(get_db)) -> dict:
+@router.get("/reset_password", response_model=UserResponse)
+async def reset_password(new_password: str, token: str, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The confirmed_password function is used to reset a user's password.
         It takes in the new_password and confirm_password fields from the ResetPassword model,
@@ -193,11 +194,6 @@ async def confirmed_password(body: ResetPassword, token: str, db: AsyncSession =
     :param db: AsyncSession: Access the database
     :return: A dictionary with the user and a message
     """
-    if body.new_password != body.confirm_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password mismatch. Please make sure that the entered passwords are identical.",
-        )
 
     email = auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
@@ -205,7 +201,7 @@ async def confirmed_password(body: ResetPassword, token: str, db: AsyncSession =
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
 
-    body.confirm_password = auth_service.get_password_hash(body.confirm_password)
-    user = await repository_users.change_password(user, body, db)
+    confirm_password = auth_service.get_password_hash(new_password)
+    user = await repository_users.change_password(user, confirm_password, db)
 
     return {"user": user, "detail": "Password reset complete!"}
