@@ -41,6 +41,25 @@
 <section id="module-main">
 <span id="rest-api-main"></span><h1>REST API main<a class="headerlink" href="#module-main" title="Link to this heading">¶</a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="main.custom_midleware">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">custom_midleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_next</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="headerlink" href="#main.custom_midleware" title="Link to this definition">¶</a></dt>
+<dd><p>The custom_midleware function is a custom middleware function that adds the time it took to process the request
+to the response headers. It does this by getting the current time before calling call_next, and then subtracting
+the start_time from it after call_next returns. The result is added to a new header called &amp;quot;performance&amp;quot;.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>request</strong> – Request: Pass the request to the next middleware</p></li>
+<li><p><strong>call_next</strong> – Call the next middleware in the chain</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A response object with a performance header</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="main.healthchecker">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">healthchecker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#main.healthchecker" title="Link to this definition">¶</a></dt>
 <dd><p>The healthchecker function is a simple function that checks the database connection.
@@ -51,6 +70,24 @@ It returns a JSON response with the message &amp;quot;Welcome to FastAPI!&amp;qu
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A dictionary with a message</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="main.limit_access_by_ip">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">limit_access_by_ip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_next</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">JSONResponse</span></span></span><a class="headerlink" href="#main.limit_access_by_ip" title="Link to this definition">¶</a></dt>
+<dd><p>The limit_access_by_ip function is a middleware function that limits access to the API by IP address.
+It checks if the client’s IP address is in a list of allowed addresses, and if not, it returns an error message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>request</strong> – Request: Get the client ip address</p></li>
+<li><p><strong>call_next</strong> – Callable: Call the next function in the middleware chain</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A jsonresponse object with a 403 status code and an error message</p>
 </dd>
 </dl>
 </dd></dl>
@@ -166,7 +203,7 @@ or do other tasks that need to happen before the server begins serving requests.
 <dd><dl class="simple">
 <dt>The get_contacts function returns a list of contacts from the address book.</dt><dd><p>The function takes in three parameters: skip, limit, and current_user.
 Skip is an integer that determines how many contacts to skip over before returning results.
-Limit is an integer that determines how many results to return after skipping over the specified number of contacts. 
+Limit is an integer that determines how many results to return after skipping over the specified number of contacts.
 Current_user is an integer representing the user whose address book we are querying.</p>
 </dd>
 </dl>
@@ -673,7 +710,7 @@ Finally, it updates the avatar field in our database with this new url.</p>
 <dt class="sig sig-object py" id="src.routes.auth.confirmed_email">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">confirmed_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.confirmed_email" title="Link to this definition">¶</a></dt>
 <dd><p>The confirmed_email function takes a token and db as parameters.
-It returns a dict with the message &amp;quot;Email confirmed&amp;quot; if the email is already confirmed, or it will return 
+It returns a dict with the message &amp;quot;Email confirmed&amp;quot; if the email is already confirmed, or it will return
 a dict with the message &amp;quot;Your email is already confirmed&amp;quot; if it isn’t.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -693,7 +730,7 @@ a dict with the message &amp;quot;Your email is already confirmed&amp;quot; if i
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">forgot_password</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RequestEmail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.forgot_password" title="Link to this definition">¶</a></dt>
 <dd><p>The forgot_password function is used to send an email to the user with a link that will allow them
 to reset their password. The function takes in a RequestEmail object, which contains the user’s email address.
-The function then checks if there is a user associated with that email address and sends an email containing 
+The function then checks if there is a user associated with that email address and sends an email containing
 a link for resetting their password.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -731,7 +768,7 @@ a link for resetting their password.</p>
 <dt class="sig sig-object py" id="src.routes.auth.refresh_token">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">refresh_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">credentials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPAuthorizationCredentials</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Security(HTTPBearer)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.refresh_token" title="Link to this definition">¶</a></dt>
 <dd><p>The refresh_token function is used to refresh the access token.
-It takes in a refresh token and returns an access token, a new refresh 
+It takes in a refresh token and returns an access token, a new refresh
 token, and the type of bearer authorization.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -750,9 +787,9 @@ token, and the type of bearer authorization.</p>
 <dt class="sig sig-object py" id="src.routes.auth.request_email">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">request_email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RequestEmail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.request_email" title="Link to this definition">¶</a></dt>
 <dd><p>The request_email function is used to send an email to the user with a link that they can click on
-to confirm their email address. The function takes in a RequestEmail object, which contains the 
-email of the user who wants to confirm their account. It then checks if there is already an account 
-with that email address and whether or not it has been confirmed yet. If there isn’t already an account, 
+to confirm their email address. The function takes in a RequestEmail object, which contains the
+email of the user who wants to confirm their account. It then checks if there is already an account
+with that email address and whether or not it has been confirmed yet. If there isn’t already an account,
 or if it has been confirmed, then we return a message saying so; otherwise we send them an email with a link.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -773,10 +810,11 @@ or if it has been confirmed, then we return a message saying so; otherwise we se
 <dt class="sig sig-object py" id="src.routes.auth.reset_password">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">reset_password</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.reset_password" title="Link to this definition">¶</a></dt>
 <dd><p>The reset_password function takes in a new password and token, then returns a dict with the user’s information and
-a detail message. The function first gets the email from the token using auth_service.get_email_from_token(). Then it 
-gets that user from repository users using get_user by email. If there is no such user, an HTTPException is raised with 
-the status code 400 (bad request) and detail &amp;quot;Verification error&amp;quot;. Otherwise, we hash the new password using 
-auth service get password hash(), then change that user’s password to this hashed version of their new one in repository users’</p>
+a detail message. The function first gets the email from the token using auth_service.get_email_from_token(). Then it
+gets that user from repository users using get_user by email. If there is no such user, an HTTPException is raised with
+the status code 400 (bad request) and detail “Verification error”. Otherwise, we hash the new password using
+auth service get password hash(), then change that user’s password to this hashed version of their new one in repository
+users’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -796,7 +834,7 @@ auth service get password hash(), then change that user’s password to this has
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.routes.auth.</span></span><span class="sig-name descname"><span class="pre">signup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">UserModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncSession</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_db)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#src.routes.auth.signup" title="Link to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>The signup function creates a new user in the database.</dt><dd><p>It takes a UserModel object as input, which contains the username and email of the new user.
-The function then checks if an account with that email already exists, and if it does not, 
+The function then checks if an account with that email already exists, and if it does not,
 creates a new account using create_user from repository_users.py.</p>
 </dd>
 </dl>
@@ -936,9 +974,9 @@ It will check if the token is valid and return an object of type User or None.</
 <dt class="sig sig-object py" id="src.services.auth.Auth.get_email_from_token">
 <span class="sig-name descname"><span class="pre">get_email_from_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#src.services.auth.Auth.get_email_from_token" title="Link to this definition">¶</a></dt>
 <dd><p>The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
-The function first tries to decode the token using jwt.decode, which raises a JWTError if it fails to decode the token. 
-If this happens, we raise an HTTPException with status code 422 (Unprocessable Entity) and detail &amp;quot;Invalid Token for Email Verification&amp;quot;. 
-Otherwise, we return the email address from payload[&amp;quot;sub&amp;quot;].</p>
+The function first tries to decode the token using jwt.decode, which raises a JWTError if it fails to decode the token.
+If this happens, we raise an HTTPException with status code 422 (Unprocessable Entity) and detail “Invalid Token for
+Email Verification”. Otherwise, we return the email address from payload[“sub”].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1066,7 +1104,9 @@ the plain-text password matches the hashed password.</p>
     <ul>
 <li><a class="reference internal" href="#">Welcome to Contact_app’s documentation!</a></li>
 <li><a class="reference internal" href="#module-main">REST API main</a><ul>
+<li><a class="reference internal" href="#main.custom_midleware"><code class="docutils literal notranslate"><span class="pre">custom_midleware()</span></code></a></li>
 <li><a class="reference internal" href="#main.healthchecker"><code class="docutils literal notranslate"><span class="pre">healthchecker()</span></code></a></li>
+<li><a class="reference internal" href="#main.limit_access_by_ip"><code class="docutils literal notranslate"><span class="pre">limit_access_by_ip()</span></code></a></li>
 <li><a class="reference internal" href="#main.on_startup"><code class="docutils literal notranslate"><span class="pre">on_startup()</span></code></a></li>
 <li><a class="reference internal" href="#main.startup"><code class="docutils literal notranslate"><span class="pre">startup()</span></code></a></li>
 </ul>
