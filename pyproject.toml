@@ -42,6 +42,13 @@ aiosqlite = "^0.19.0"
 types-redis = "^4.6.0.7"
 types-python-jose = "^3.3.4.8"
 types-passlib = "^1.7.7.13"
+sphinx = "^7.2.6"
+pytest = "^7.4.2"
+pytest-asyncio = "^0.21.1"
+
+
+[tool.poetry.group.test.dependencies]
+httpx = "^0.25.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -60,8 +67,21 @@ module = [
     "cloudinary.uploader",
     "fastapi_limiter",
     "fastapi_limiter.depends",
+    "redis",
+    "redis.asyncio",
+
 ]
 ignore_missing_imports = true
 
 [tool.ruff]
 line-length=130
+
+[tool.coverage.run]
+omit = [
+    "test_repository_addressbook.py",
+    "test_runner.py",
+    "__init__.py",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

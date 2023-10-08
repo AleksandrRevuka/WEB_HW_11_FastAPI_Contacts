@@ -7,14 +7,10 @@ from src.database.db import get_db
 from src.database.models import AddressBookContact as ABC
 from src.database.models import Role, User
 from src.repository import addressbook as repository_addressbook
-from src.schemas.addressbook import (
-    AddressbookCreate,
-    AddressbookResponse,
-    AddressbookUpdateBirthday,
-    AddressbookUpdateName,
-    EmailCreate,
-    PhoneCreate,
-)
+from src.schemas.addressbook import (AddressbookCreate, AddressbookResponse,
+                                     AddressbookUpdateBirthday,
+                                     AddressbookUpdateName, EmailCreate,
+                                     PhoneCreate)
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 
@@ -50,7 +46,6 @@ async def read_contacts(
     """
 
     addressbook = await repository_addressbook.get_contacts(skip, limit, current_user.id, db)
-    print(addressbook)
     return addressbook
 
 
@@ -146,16 +141,18 @@ async def add_phone_to_contact(
 ):
     """
     The add_phone_to_contact function adds a phone to an existing contact.
-        The function takes the following arguments:
-            - contact_id: int, the id of the contact to add a phone number to.
-            - phone_create: PhoneCreate, an object containing information about
-                            what kind of phone number is being added and its value.
+
+    The function takes the following arguments:
+        - contact_id: int: The id of the contact to add a phone number to.
+        - phone_create: PhoneCreate: An object containing information about
+                                    what kind of phone number is being added and its value.
 
     :param contact_id: int: Identify the contact to which we want to add a phone number
     :param phone_create: PhoneCreate: Create a new phone object
     :param db: AsyncSession: Access the database
     :param current_user: User: Get the current user
-    :return:The contact with the added phone
+
+    :return: The contact with the added phone
     """
     contact = await repository_addressbook.add_phone_to_contact(db, phone_create, current_user.id, contact_id)
     if contact is None:
@@ -240,18 +237,16 @@ async def update_contact_birthday(
     :param body: AddressbookUpdateBirthday: Get the new birthday from the request body
     :param db: AsyncSession: Pass the database session to the function
     :param current_user: User: Get the current user
-    :param : Get the contact id
     :return: The updated contact
     """
     contact = await repository_addressbook.update_contact_birthday(db, body, current_user.id, contact_id)
-    if contact is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+
     return contact
 
 
 @router.delete(
     "/{contact_id}",
-    dependencies=[Depends(allowed_operation_remove)],
+    dependencies=[Depends(allowed_operation_get)],
     description="Only admin",
 )
 async def remove_contact(
@@ -265,7 +260,6 @@ async def remove_contact(
     :param contact_id: int: Get the contact id from the url
     :param db: AsyncSession: Pass a database session to the function
     :param current_user: User: Get the current user
-    :param : Get the current user
     :return: The deleted contact
     """
     contact = await repository_addressbook.remove_contact(db, current_user.id, contact_id)

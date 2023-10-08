@@ -8,21 +8,56 @@ from sqlalchemy.sql.schema import ForeignKey
 
 
 class Base(DeclarativeBase):
+    """
+    Base class for SQLAlchemy models.
+    """
+
     pass
 
 
 class Role(enum.Enum):
+    """
+    Enum representing user roles.
+
+    Attributes:
+        admin (str): Admin role.
+        moderator (str): Moderator role.
+        user (str): User role.
+    """
+
     admin: str = "admin"
     moderator: str = "moderator"
     user: str = "user"
 
 
 class ContactType(enum.Enum):
-    email = "email"
-    phone = "phone"
+    """
+    Enum representing types of contacts.
+
+    Attributes:
+        email (str): Email contact type.
+        phone (str): Phone contact type.
+    """
+
+    email: str = "email"
+    phone: str = "phone"
 
 
 class AddressBookContact(Base):
+    """
+    Represents a contact in the address book.
+
+    Attributes:
+        id (int): Unique identifier for the contact.
+        first_name (str): First name of the contact.
+        last_name (str): Last name of the contact.
+        birthday (date): Birthday of the contact.
+        user_id (int): User ID associated with the contact.
+        created_at (datetime): Date and time of creation.
+        updated_at (datetime): Date and time of the last update.
+        contacts (List[Contact]): List of contacts associated with the address book.
+    """
+
     __tablename__ = "addressbook"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -38,6 +73,18 @@ class AddressBookContact(Base):
 
 
 class Contact(Base):
+    """
+    Represents a contact.
+
+    Attributes:
+        id (int): Unique identifier for the contact.
+        contact_type (ContactType): Type of the contact.
+        contact_value (str): Value of the contact.
+        contact_id (int): ID of the associated address book contact.
+        created_at (datetime): Date and time of creation.
+        updated_at (datetime): Date and time of the last update.
+    """
+
     __tablename__ = "contacts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -50,6 +97,23 @@ class Contact(Base):
 
 
 class User(Base):
+    """
+    Represents a user.
+
+    Attributes:
+        id (int): Unique identifier for the user.
+        username (str): Username of the user.
+        email (str): Email address of the user.
+        confirmed (bool): Flag indicating if the email is confirmed.
+        password (str): Password of the user.
+        refresh_token (str): Refresh token of the user.
+        avatar (str): Avatar URL of the user.
+        roles (Role): Role of the user.
+        created_at (datetime): Date and time of creation.
+        updated_at (datetime): Date and time of the last update.
+        addressbook (List[AddressBookContact]): List of address book contacts associated with the user.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)

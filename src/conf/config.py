@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     cloudinary_api_key: str = "1234567890"
     cloudinary_api_secret: str = "secret"
 
-    class Config:
+    class ConfigDict:
         env_file = ".env"
         env_file_encoding = "utf-8"
 

@@ -110,16 +110,15 @@ class Auth:
         self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
     ) -> Union[User, None]:
         """
-        The get_current_user function is a dependency that will be used in the
-            protected routes. It uses the OAuth2PasswordBearer scheme to get and validate
-            the users JWT token. If it is valid, then we decode it using our SECRET_KEY
-            and ALGORITHM from settings.py, which are both required for decoding a JWT token.
+        The get_current_user function is a dependency that can be used to get the current user.
+        It will check if the token is valid and return an object of type User or None.
 
-        :param self: Refer to the class itself
-        :param token: str: Pass the token that is sent in the authorization header of a request
-        :param db: Session: Pass the database session to the function
-        :return: A user object
+        :param self: Access the class attributes
+        :param token: str: Get the token from the authorization header
+        :param db: AsyncSession: Get the database session
+        :return: The user object if the token is valid
         """
+
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -152,12 +151,15 @@ class Auth:
     def get_email_from_token(self, token: str) -> str:
         """
         The get_email_from_token function takes a token as an argument and returns the email address associated with that token.
-        If the token is invalid, it raises an HTTPException.
+        The function first tries to decode the token using jwt.decode, which raises a JWTError if it fails to decode the token.
+        If this happens, we raise an HTTPException with status code 422 (Unprocessable Entity) and detail "Invalid Token for
+        Email Verification". Otherwise, we return the email address from payload["sub"].
 
         :param self: Represent the instance of the class
-        :param token: str: Pass in the token that was sent to the user's email
-        :return: The email address that is stored in the token
+        :param token: str: Pass in the token that was sent to the user's email address
+        :return: The email from the token
         """
+
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
         except JWTError as e:
@@ -167,6 +169,15 @@ class Auth:
         return email
 
     def create_email_token(self, data: dict) -> str:
+        """
+        The create_email_token function creates a token that is used to verify the user's email address.
+        The function takes in a dictionary of data, and returns an encoded string.
+
+        :param self: Represent the instance of a class
+        :param data: dict: Pass in the data that will be encoded into the token
+        :return: A token that is used to verify the user's email address
+        """
+
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=7)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire})

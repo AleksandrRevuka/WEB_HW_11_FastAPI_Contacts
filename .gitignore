@@ -7,3 +7,6 @@ migrations/
 postgres-data/
 .ruff_cache
 .mypy_cache
+.coverage
+.vscode
+.pytest_cache

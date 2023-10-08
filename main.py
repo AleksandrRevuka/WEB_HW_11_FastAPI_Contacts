@@ -4,11 +4,10 @@ from ipaddress import ip_address, ip_network
 from typing import Callable
 
 import click
-import redis.asyncio as redis
+import redis.asyncio as redis_async
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,7 +35,7 @@ async def startup() -> FastAPILimiter:
 
     :return: A fastapilimiter object
     """
-    r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0, encoding="utf-8", decode_responses=True)
+    r = await redis_async.Redis(host=settings.redis_host, port=settings.redis_port, db=0, encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(r)
 
 
@@ -82,9 +81,6 @@ async def limit_access_by_ip(request: Request, call_next: Callable) -> JSONRespo
 
     response = await call_next(request)
     return response
-
-
-app.mount("/src", StaticFiles(directory="src/static"), name="static")
 
 
 @app.on_event("startup")

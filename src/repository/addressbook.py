@@ -7,18 +7,23 @@ from sqlalchemy.orm import aliased
 
 from src.database.models import AddressBookContact as ABC
 from src.database.models import Contact, ContactType
-from src.schemas.addressbook import AddressbookCreate, AddressbookUpdateBirthday, AddressbookUpdateName, EmailCreate, PhoneCreate
+from src.schemas.addressbook import (AddressbookCreate,
+                                     AddressbookUpdateBirthday,
+                                     AddressbookUpdateName, EmailCreate,
+                                     PhoneCreate)
 
 
 async def search_contacts(criteria: str, current_user: int, db: AsyncSession):
     """
-    The search_contacts function searches the address book for a user by first name, last name, or contact value.
+    The search_contacts function takes in a string of criteria and the current user's id,
+    and returns all contacts that match the search criteria. The search is case-insensitive.
 
-    :param criteria: str: Filter the results based on a search term
-    :param current_user: int: Ensure that the user is only able to search for contacts in their own address book
-    :param db: AsyncSession: Pass the database connection to the function
-    :return: A list of tuples
+    :param criteria: str: Search for the user's contacts
+    :param current_user: int: Filter the results to only return contacts that belong to the current user
+    :param db: AsyncSession: Pass the database session to the function
+    :return: A list of contacts
     """
+
     query = (
         select(ABC)
         .join(Contact)
@@ -43,17 +48,18 @@ async def search_contacts(criteria: str, current_user: int, db: AsyncSession):
 async def get_contacts(skip: int, limit: int, current_user: int, db: AsyncSession):
     """
     The get_contacts function returns a list of contacts from the address book.
-    The function takes in three parameters: skip, limit, and current_user.
-    Skip is an integer that determines how many contacts to skip over before returning results.
-    Limit is an integer that determines how many results to return after skipping over the specified number of contacts.
-    Current_user is an integer representing the user whose address book we are querying.
+        The function takes in three parameters: skip, limit, and current_user.
+        Skip is an integer that determines how many contacts to skip over before returning results.
+        Limit is an integer that determines how many results to return after skipping over the specified number of contacts.
+        Current_user is an integer representing the user whose address book we are querying.
 
-    :param skip: int: Determine how many records to skip
+    :param skip: int: Skip the first n records
     :param limit: int: Limit the number of results returned
-    :param current_user: int: Filter the results by user_id
+    :param current_user: int: Filter the results to only return contacts that belong to the current user
     :param db: AsyncSession: Pass the database session to the function
-    :return: A list of tuples
+    :return: A list of contacts
     """
+
     abc_alias = aliased(ABC)
     contact_alias = aliased(Contact)
     query = select(abc_alias).join(contact_alias).where(abc_alias.user_id == current_user).offset(skip).limit(limit)
@@ -65,16 +71,14 @@ async def get_contacts(skip: int, limit: int, current_user: int, db: AsyncSessio
 async def get_contact(db: AsyncSession, contact_id: int, current_user: int) -> ABC | None:
     """
     The get_contact function is used to retrieve a single contact from the address book.
-    It takes in two parameters: db and contact_id. The db parameter is an AsyncSession object that represents the database
-    connection, while the contact_id parameter is an integer representing which specific Contact we want to retrieve
-    from our Address Book.
-    The function returns either a single Contact or None if no such Contact exists.
 
-    :param db: AsyncSession: Pass in the database session
-    :param contact_id: int: Specify the contact id of the contact you want to retrieve
-    :param current_user: int: Make sure that the user can only access their own address book
+    :param db: AsyncSession: Pass the database session to the function
+    :param contact_id: int: Identify the contact to be retrieved
+    :param current_user: int: Ensure that the user is only able to access their own contacts
+
     :return: A contact from the database
     """
+
     abc_alias = aliased(ABC)
     contact_alias = aliased(Contact)
     query = select(abc_alias).join(contact_alias).where(and_(abc_alias.user_id == current_user, abc_alias.id == contact_id))
@@ -93,19 +97,16 @@ async def create_contact(
     current_user: int,
 ) -> ABC:
     """
-    The create_contact function creates a new contact in the database.
-        Args:
-            db (AsyncSession): The database session to use for this operation.
-            contact_create (AddressbookCreate): A pydantic model containing the data needed to create a new Contact object.
+    The create_contact function creates a new contact in the address book.
 
     :param db: AsyncSession: Pass the database session to the function
     :param contact_create: AddressbookCreate: Create a new contact
-    :param email_create: EmailCreate: Create a new contact
-    :param phone_create: PhoneCreate: Create a new phone object
-    :param current_user: int: Get the current user id
-    :param : Pass the database session to the function
-    :return: The new contact
+    :param email_create: EmailCreate: Create a new email object
+    :param phone_create: PhoneCreate: Create a new phone number for the contact
+    :param current_user: int: Get the current user's id
+    :return: A contact object
     """
+
     db_contact = ABC(**contact_create.model_dump())
 
     db_contact.user_id = current_user
@@ -127,7 +128,7 @@ async def create_contact(
 
         contact = await db.execute(query)
         existing_contact = contact.fetchone()
-        print(existing_contact)
+
         if existing_contact and existing_contact[0] != db_contact.id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -168,29 +169,29 @@ async def create_contact(
         if existing_phone:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Phone is exists!")
 
-    db.add(db_contact)
-    await db.commit()
-    await db.refresh(db_contact)
+        db.add(db_contact)
+        await db.commit()
+        await db.refresh(db_contact)
 
-    email = Contact(
-        contact_type=ContactType.email,
-        contact_value=email_create.email,
-        contact_id=db_contact.id,
-    )
+        email = Contact(
+            contact_type=ContactType.email,
+            contact_value=email_create.email,
+            contact_id=db_contact.id,
+        )
 
-    db.add(email)
-    await db.commit()
-    await db.refresh(email)
+        db.add(email)
+        await db.commit()
+        await db.refresh(email)
 
-    phone = Contact(
-        contact_type=ContactType.phone,
-        contact_value=phone_create.phone,
-        contact_id=db_contact.id,
-    )
+        phone = Contact(
+            contact_type=ContactType.phone,
+            contact_value=phone_create.phone,
+            contact_id=db_contact.id,
+        )
 
-    db.add(phone)
-    await db.commit()
-    await db.refresh(phone)
+        db.add(phone)
+        await db.commit()
+        await db.refresh(phone)
 
     return db_contact
 
@@ -218,7 +219,7 @@ async def add_phone_to_contact(db: AsyncSession, phone_create: PhoneCreate, curr
     )
     existing_phone = await db.execute(phone_query)
     if existing_phone.scalar():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists for the contact")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Phone already exists for the contact")
 
     new_phone = Contact(
         contact_type=ContactType.phone,
@@ -292,7 +293,7 @@ async def update_contact_name(db: AsyncSession, body: AddressbookUpdateName, cur
         ABC.user_id == current_user,
     )
     existing_name = await db.execute(existing_name_query)
-    if existing_name.scalar():
+    if existing_name.fetchone():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Contact with the same first and last name already exists",
@@ -306,18 +307,17 @@ async def update_contact_name(db: AsyncSession, body: AddressbookUpdateName, cur
     return contact
 
 
-async def update_contact_birthday(
-    db: AsyncSession, body: AddressbookUpdateBirthday, current_user: int, contact_id: int
-) -> ABC | None:
+async def update_contact_birthday(db: AsyncSession, body: AddressbookUpdateBirthday, current_user: int, contact_id: int) -> ABC:
     """
     The update_contact_birthday function updates the birthday of a contact.
 
-    :param db: AsyncSession: Create a database connection
-    :param body: AddressbookUpdateBirthday: Pass the data from the request body to the function
-    :param current_user: int: Ensure that the user is only able to update their own contact
-    :param contact_id: int: Identify the contact to be updated
+    :param db: AsyncSession: Pass the database session to this function
+    :param body: AddressbookUpdateBirthday: Get the new birthday from the request body
+    :param current_user: int: Ensure that the user is only able to update their own contacts
+    :param contact_id: int: Identify the contact that is being updated
     :return: The updated contact
     """
+
     contact_query = select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user)
     existing_contact = await db.execute(contact_query)
     contact = existing_contact.scalar()
@@ -336,22 +336,28 @@ async def remove_contact(db: AsyncSession, current_user: int, contact_id: int) -
     """
     The remove_contact function removes a contact from the database.
 
-    :param db: AsyncSession: Pass the database session into the function
-    :param current_user: int: Identify the user who is making the request
+    :param db: AsyncSession: Pass in the database session
+    :param current_user: int: Ensure that the user is only able to delete their own contacts
     :param contact_id: int: Identify the contact to be deleted
-    :return: The contact that was deleted
+    :return: The contact that was removed
     """
+
     contact_query = select(ABC).where(ABC.id == contact_id, ABC.user_id == current_user)
     existing_contact = await db.execute(contact_query)
     contact = existing_contact.scalar()
 
+    # contact = await db.get(ABC, (current_user, contact_id))
+
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
 
-    await db.delete(contact)
-    await db.commit()
-
-    return contact
+    try:
+        await db.delete(contact)
+        await db.commit()
+        return contact
+    except Exception as error:
+        await db.rollback()
+        raise error
 
 
 async def read_contact_days_to_birthday(db: AsyncSession, days_to_birthday: int, current_user: int):
@@ -379,6 +385,7 @@ async def read_contact_days_to_birthday(db: AsyncSession, days_to_birthday: int,
         )
         .order_by(ABC.birthday)
     )
+
     upcoming_birthday_contacts = await db.execute(upcoming_birthday_contacts_query)
     results = upcoming_birthday_contacts.scalars().all()
 
