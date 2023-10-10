@@ -8,7 +8,6 @@ passlib
 python-jose 
 libgravatar
 python-multipart
-logging
 psycopg2-binary
 pydantic[email]
 fastapi-mail

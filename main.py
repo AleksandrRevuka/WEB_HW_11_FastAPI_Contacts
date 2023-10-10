@@ -16,7 +16,7 @@ from src.conf.config import settings
 from src.database.db import get_db
 from src.routes import addressbook, auth, users
 
-logger = logging.getLogger("uvicorn")
+# logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
 
@@ -93,18 +93,18 @@ async def limit_access_by_ip(request: Request, call_next: Callable) -> JSONRespo
     return response
 
 
-@app.on_event("startup")
-async def on_startup() -> None:
-    """
-    The on_startup function is called when the application starts.
-    It prints a message to the console, so that you know where to go in your browser.
+# @app.on_event("startup")
+# async def on_startup() -> None:
+#     """
+#     The on_startup function is called when the application starts.
+#     It prints a message to the console, so that you know where to go in your browser.
 
-    :return: None
-    """
-    message = "Open http://127.0.0.1:8000/docs to start api 🚀 🌘 🪐"
-    color_url = click.style("http://127.0.0.1:8000/docs", bold=True, fg="green", italic=True)
-    color_message = f"Open {color_url} to start api 🚀 🌘 🪐"
-    logger.info(message, extra={"color_message": color_message})
+#     :return: None
+#     """
+#     message = "Open http://127.0.0.1:8000/docs to start api 🚀 🌘 🪐"
+#     color_url = click.style("http://127.0.0.1:8000/docs", bold=True, fg="green", italic=True)
+#     color_message = f"Open {color_url} to start api 🚀 🌘 🪐"
+    # logger.info(message, extra={"color_message": color_message})
 
 
 @app.get("/api/healthchecker", tags=["healthchecker"])
