@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     redis_password: str = "secretPassword"
 
-    allowed_ips: str
+    # allowed_ips: str
 
     cloudinary_name: str = "name"
     cloudinary_api_key: str = "1234567890"

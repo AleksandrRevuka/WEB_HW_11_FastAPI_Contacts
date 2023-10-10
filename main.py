@@ -68,29 +68,29 @@ async def custom_midleware(request: Request, call_next) -> Response:
     return response
 
 
-@app.middleware("http")
-async def limit_access_by_ip(request: Request, call_next: Callable) -> JSONResponse:
-    """
-    The limit_access_by_ip function is a middleware function that limits access to the API by IP address.
-    It checks if the client's IP address is in a list of allowed addresses, and if not, it returns an error message.
+# @app.middleware("http")
+# async def limit_access_by_ip(request: Request, call_next: Callable) -> JSONResponse:
+#     """
+#     The limit_access_by_ip function is a middleware function that limits access to the API by IP address.
+#     It checks if the client's IP address is in a list of allowed addresses, and if not, it returns an error message.
 
-    :param request: Request: Get the client ip address
-    :param call_next: Callable: Call the next function in the middleware chain
-    :return: A jsonresponse object with a 403 status code and an error message
-    """
-    # Ensure request.client is not None before accessing host
-    if request.client and request.client.host:
-        host = request.client.host
-        ip = ip_address(host)
-        allowed_ips = list(ip_network(f"{settings.allowed_ips}/24"))
+#     :param request: Request: Get the client ip address
+#     :param call_next: Callable: Call the next function in the middleware chain
+#     :return: A jsonresponse object with a 403 status code and an error message
+#     """
+#     # Ensure request.client is not None before accessing host
+#     if request.client and request.client.host:
+#         host = request.client.host
+#         ip = ip_address(host)
+#         allowed_ips = list(ip_network(f"{settings.allowed_ips}/24"))
 
-        if ip not in allowed_ips:
-            return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Not allowed IP address"})
-    else:
-        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Invalid client"})
+#         if ip not in allowed_ips:
+#             return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Not allowed IP address"})
+#     else:
+#         return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Invalid client"})
 
-    response = await call_next(request)
-    return response
+#     response = await call_next(request)
+#     return response
 
 
 # @app.on_event("startup")
