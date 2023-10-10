@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     postgres_db: str = "postgres"
     postgres_domain: str = "localhost"
     postgres_port: int = 5432
-
+    
     secret_key: str = "secret_key"
     algorithm: str = "HS256"
 

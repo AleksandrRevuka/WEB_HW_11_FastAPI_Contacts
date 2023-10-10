@@ -111,7 +111,7 @@ async def custom_midleware(request: Request, call_next) -> Response:
 async def healthchecker(db: AsyncSession = Depends(get_db)) -> dict:
     """
     The healthchecker function is a simple function that checks the database connection.
-    It returns a JSON response with the message &quot;Welcome to FastAPI!&quot; if everything is working correctly.
+    It returns a JSON response with the message "Welcome to FastAPI!" if everything is working correctly.
 
     :param db: Session: Pass the database connection to the function
     :return: A dictionary with a message
