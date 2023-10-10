@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_url(self) -> str:
-        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}/{self.postgres_db}"
+        return f"postgres://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}/{self.postgres_db}"
 
 
 settings = Settings()  # type: ignore
