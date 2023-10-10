@@ -49,7 +49,7 @@ async def test_repeat_create_user(client: AsyncClient, user, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_login_user_invalid_email(client, user):
+async def test_login_user_invalid_email(client: AsyncClient, user):
     sleep(5)
     response = await client.post(
         "/api/auth/signup",
@@ -67,7 +67,7 @@ async def test_login_user_invalid_email(client, user):
 
 
 @pytest.mark.asyncio
-async def test_login_user_not_confirmed(client, user):
+async def test_login_user_not_confirmed(client: AsyncClient, user):
     sleep(8)
 
     response = await client.post(
@@ -86,7 +86,7 @@ async def test_login_user_not_confirmed(client, user):
 
 
 @pytest.mark.asyncio
-async def test_login_wrong_password(client, user, session):
+async def test_login_wrong_password(client: AsyncClient, user, session: AsyncSession):
     sleep(10)
     response = await client.post("/api/auth/signup", json=user)
     assert response.status_code == 201, response.text
@@ -109,7 +109,7 @@ async def test_login_wrong_password(client, user, session):
 
 
 @pytest.mark.asyncio
-async def test_login_user(client, session: AsyncSession, user):
+async def test_login_user(client: AsyncClient, session: AsyncSession, user):
     sleep(15)
     response = await client.post("/api/auth/signup", json=user)
     assert response.status_code == 201, response.text
