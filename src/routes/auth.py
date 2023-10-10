@@ -108,8 +108,8 @@ async def refresh_token(
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)) -> dict:
     """
     The confirmed_email function takes a token and db as parameters.
-    It returns a dict with the message &quot;Email confirmed&quot; if the email is already confirmed, or it will return
-    a dict with the message &quot;Your email is already confirmed&quot; if it isn't.
+    It returns a dict with the message "Email confirmed" if the email is already confirmed, or it will return
+    a dict with the message "Your email is already confirmed" if it isn't.
 
     :param token: str: Get the email from the token
     :param db: AsyncSession: Pass the database session to the function

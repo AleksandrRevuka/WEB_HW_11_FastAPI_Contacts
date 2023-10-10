@@ -35,8 +35,18 @@ async def startup() -> FastAPILimiter:
 
     :return: A fastapilimiter object
     """
-    r = await redis_async.Redis(host=settings.redis_host, port=settings.redis_port, db=0, encoding="utf-8", decode_responses=True)
-    await FastAPILimiter.init(r)
+    try:
+        r = await redis_async.Redis(host=settings.redis_host, 
+                                    port=settings.redis_port,
+                                    password=settings.redis_password,
+                                    db=0, 
+                                    encoding="utf-8", 
+                                    decode_responses=True)
+        await FastAPILimiter.init(r)
+    except redis_async.ConnectionError as e:
+        click.secho(f"ERROR redis: {e}", bold=True, fg="red", italic=True)
+        raise HTTPException(status_code=500, detail="Error connecting to the redis")
+
 
 
 @app.middleware("http")
