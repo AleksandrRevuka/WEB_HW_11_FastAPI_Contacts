@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
                                     async_sessionmaker, create_async_engine)
 
 from src.conf.config import settings
-import asyncpg
 
 SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
+print(SQLALCHEMY_DATABASE_URL)
 
 
 class DatabaseSessionManager:

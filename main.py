@@ -12,7 +12,7 @@ from fastapi_limiter import FastAPILimiter
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.conf.config import settings
+from src.conf.config import settings, init_async_redis
 from src.database.db import get_db
 from src.routes import addressbook, auth, users
 
@@ -36,12 +36,7 @@ async def startup() -> FastAPILimiter:
     :return: A fastapilimiter object
     """
     try:
-        r = await redis_async.Redis(host=settings.redis_host, 
-                                    port=settings.redis_port,
-                                    password=settings.redis_password,
-                                    db=0, 
-                                    encoding="utf-8", 
-                                    decode_responses=True)
+        r = await init_async_redis()
         await FastAPILimiter.init(r)
     except redis_async.ConnectionError as e:
         click.secho(f"ERROR redis: {e}", bold=True, fg="red", italic=True)

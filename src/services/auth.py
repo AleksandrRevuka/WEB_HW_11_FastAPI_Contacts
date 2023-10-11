@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.conf.config import settings
+from src.conf.config import settings, init_async_redis
 from src.database.db import get_db
 from src.database.models import User
 from src.repository import users as repository_users
@@ -20,7 +20,13 @@ class Auth:
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host=settings.redis_host, port=settings.redis_port, password=settings.redis_password, db=0)
+    
+    @property
+    async def redis_cache(self):
+
+        if self._redis_cache is None:
+            self._redis_cache = await init_async_redis()
+        return self._redis_cache
 
     def verify_password(self, plain_password, hashed_password) -> bool:
         """
@@ -137,14 +143,14 @@ class Auth:
         except JWTError:
             raise credentials_exception
 
-        user_r = self.r.get(f"user:{email}")
+        user_r = await (await self.redis_cache).get(f"user:{email}")
         if user_r is None:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
             user_r = pickle.dumps(user)
-            self.r.set(f"user:{email}", user_r)
-            self.r.expire(f"user:{email}", 900)
+            await (await self.redis_cache).set(f"user:{email}", user_r)
+            await (await self.redis_cache).expire(f"user:{email}", 900)
 
         return pickle.loads(user_r)
 

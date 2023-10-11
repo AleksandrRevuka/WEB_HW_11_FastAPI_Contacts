@@ -1,6 +1,16 @@
+import redis.asyncio
+
 from pydantic_settings import BaseSettings
 
-
+async def init_async_redis():
+    return redis.asyncio.Redis(
+        host=settings.redis_host,
+        password=settings.redis_password,
+        port=settings.redis_port,
+        db=0,
+        encoding="utf-8",
+    )
+    
 class Settings(BaseSettings):
     postgres_user: str = "postgres"
     postgres_password: str = "secretPassword"
@@ -19,7 +29,7 @@ class Settings(BaseSettings):
 
     redis_host: str = "localhost"
     redis_port: int = 6379
-    redis_password: str = "secretPassword"
+    redis_password: str = ""
 
     # allowed_ips: str
 
@@ -33,7 +43,6 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_url(self) -> str:
-        return f"postgres://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}/{self.postgres_db}"
-
+        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}/{self.postgres_db}"
 
 settings = Settings()  # type: ignore
