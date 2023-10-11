@@ -46,3 +46,6 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_domain}/{self.postgres_db}"
 
 settings = Settings()  # type: ignore
+settings.redis_host = "redis-16977.c293.eu-central-1-1.ec2.cloud.redislabs.com"
+settings.redis_port = 16977
+settings.redis_password = "J7crqRMLuBtBHyvLUnzqBgaicwsPcQxp"
